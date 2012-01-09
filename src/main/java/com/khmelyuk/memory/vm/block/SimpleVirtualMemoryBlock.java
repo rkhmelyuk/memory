@@ -1,5 +1,8 @@
 package com.khmelyuk.memory.vm.block;
 
+import com.khmelyuk.memory.OutOfBoundException;
+import com.khmelyuk.memory.ReadException;
+import com.khmelyuk.memory.WriteException;
 import com.khmelyuk.memory.vm.VirtualMemory;
 
 import java.io.*;
@@ -37,23 +40,25 @@ public class SimpleVirtualMemoryBlock implements VirtualMemoryBlock {
         return vm.getOutputStream(address, length);
     }
 
-    public void write(byte[] data) {
-        // TODO - limit check
+    public void write(byte[] data) throws OutOfBoundException {
+        if (data.length > length) {
+            throw new OutOfBoundException();
+        }
         vm.write(data, address, length);
     }
 
-    public void write(byte[] data, int offset, int length) {
-        // TODO - limit check
+    public void write(byte[] data, int offset, int length) throws OutOfBoundException {
+        if (offset + length > this.length) {
+            throw new OutOfBoundException();
+        }
         vm.write(data, address + offset, length);
     }
 
     public int read(byte[] data) {
-        // TODO - limit check
         return vm.read(data, address, length);
     }
 
     public int read(byte[] data, int offset, int length) {
-        // TODO - limit check
         return vm.read(data, address + offset, length);
     }
 
@@ -71,8 +76,7 @@ public class SimpleVirtualMemoryBlock implements VirtualMemoryBlock {
             new ObjectOutputStream(out).writeObject(obj);
         }
         catch (IOException e) {
-            // TODO =- log error
-            e.printStackTrace();
+            throw new WriteException("Error to read an object", e);
         }
     }
 
@@ -82,14 +86,10 @@ public class SimpleVirtualMemoryBlock implements VirtualMemoryBlock {
             return new ObjectInputStream(in).readObject();
         }
         catch (IOException e) {
-            // TODO - handle error
-            e.printStackTrace();
+            throw new ReadException("Error to read an object", e);
         }
         catch (ClassNotFoundException e) {
-            // TODO - handle error
-            e.printStackTrace();
+            throw new ReadException("Error to read an object", e);
         }
-
-        return null;
     }
 }

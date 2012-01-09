@@ -99,6 +99,7 @@ public class FixedVirtualMemory implements VirtualMemory {
         }
 
         System.arraycopy(this.data, offset, data, 0, length);
+
         return length;
     }
 

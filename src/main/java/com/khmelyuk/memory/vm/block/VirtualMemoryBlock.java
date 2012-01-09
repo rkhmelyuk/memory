@@ -1,5 +1,7 @@
 package com.khmelyuk.memory.vm.block;
 
+import com.khmelyuk.memory.OutOfBoundException;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -45,8 +47,9 @@ public interface VirtualMemoryBlock {
      * Write array of bytes to the block.
      *
      * @param data the array to write to the block.
+     * @throws OutOfBoundException error to access the memory out of bound.
      */
-    void write(byte[] data);
+    void write(byte[] data) throws OutOfBoundException;
 
     /**
      * Read the data from block into the array.
@@ -63,8 +66,9 @@ public interface VirtualMemoryBlock {
      * @param data   the byte array to write to the virtual memory block.
      * @param offset the offset to write from.
      * @param length the length of the data to write to.
+     * @throws OutOfBoundException error to access the memory out of bound.
      */
-    void write(byte[] data, int offset, int length);
+    void write(byte[] data, int offset, int length) throws OutOfBoundException;
 
     /**
      * Read data from virtual memory block into byte array from specified offset and with specified length.
@@ -92,12 +96,14 @@ public interface VirtualMemoryBlock {
 
     /**
      * Write the object to the block.
+     *
      * @param object the object to write to the block.
      */
     void writeObject(Object object);
 
     /**
      * Read the object from the block.
+     *
      * @return the read object, if not found than null.
      */
     Object readObject();

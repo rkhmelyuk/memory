@@ -1,5 +1,6 @@
 package com.khmelyuk.memory.vm;
 
+import com.khmelyuk.memory.OutOfBoundException;
 import com.khmelyuk.memory.vm.block.VirtualMemoryBlock;
 
 import java.io.InputStream;
@@ -45,8 +46,9 @@ public interface VirtualMemory {
      * @param offset the input stream offset.
      * @param length the input stream length.
      * @return the virtual memory part as input stream.
+     * @throws OutOfBoundException error to access the memory out of bound.
      */
-    InputStream getInputStream(int offset, int length);
+    InputStream getInputStream(int offset, int length) throws OutOfBoundException;
 
     /**
      * Gets the virtual memory as output stream.
@@ -63,40 +65,46 @@ public interface VirtualMemory {
      * @param offset the input stream offset.
      * @param length the input stream length.
      * @return the virtual memory part as output stream.
+     * @throws OutOfBoundException error to access the memory out of bound.
      */
-    OutputStream getOutputStream(int offset, int length);
+    OutputStream getOutputStream(int offset, int length) throws OutOfBoundException;
 
     /**
      * Writes the data as byte array directly to the virtual memory.
      *
      * @param data the byte array to write to the virtual memory.
+     * @throws OutOfBoundException error to access the memory out of bound.
      */
-    void write(byte[] data);
+    void write(byte[] data) throws OutOfBoundException;
 
     /**
      * Writes the data as byte array directly to the virtual memory from specified offset.
      *
      * @param data   the byte array to write to the virtual memory.
      * @param offset the offset to write from.
+     * @throws OutOfBoundException error to access the memory out of bound.
      */
-    void write(byte[] data, int offset);
+    void write(byte[] data, int offset) throws OutOfBoundException;
 
     /**
      * Writes the byte value directly to the virtual memory on specified offset.
      *
      * @param data   the byte to write to the virtual memory.
      * @param offset the offset to write from.
+     * @throws OutOfBoundException error to access the memory out of bound.
      */
-    void write(byte data, int offset);
+    void write(byte data, int offset) throws OutOfBoundException;
 
     /**
-     * Writes the byte array directly to the virtual memory started from specified offset and with specified length.
+     * Writes the byte array directly to the virtual memory
+     * started from specified offset and with specified length.
      *
      * @param data   the byte array to write to the virtual memory.
      * @param offset the offset to write from.
      * @param length the length of the data to write to.
+     * @throws OutOfBoundException error to access the memory out of bound.
      */
-    void write(byte[] data, int offset, int length);
+    void write(byte[] data, int offset, int length) throws OutOfBoundException;
 
     /**
      * Read data from virtual memory into byte array and returns the number of read bytes.

@@ -6,4 +6,11 @@ package com.khmelyuk.memory;
  * @author Ruslan Khmelyuk
  */
 public class MemoryException extends RuntimeException {
+
+    public MemoryException() {
+    }
+
+    public MemoryException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
