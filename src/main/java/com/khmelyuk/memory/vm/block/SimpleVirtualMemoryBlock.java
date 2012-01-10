@@ -70,7 +70,7 @@ public class SimpleVirtualMemoryBlock implements VirtualMemoryBlock {
         writeObject(string);
     }
 
-    public void writeObject(Object obj) {
+    public void writeObject(Object obj) throws OutOfBoundException, WriteException {
         try {
             OutputStream out = vm.getOutputStream(address, length);
             new ObjectOutputStream(out).writeObject(obj);
@@ -80,7 +80,7 @@ public class SimpleVirtualMemoryBlock implements VirtualMemoryBlock {
         }
     }
 
-    public Object readObject() {
+    public Object readObject() throws OutOfBoundException, ReadException {
         InputStream in = vm.getInputStream(address, length);
         try {
             return new ObjectInputStream(in).readObject();

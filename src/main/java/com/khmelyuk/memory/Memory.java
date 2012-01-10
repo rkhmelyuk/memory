@@ -1,5 +1,8 @@
 package com.khmelyuk.memory;
 
+import com.khmelyuk.memory.space.FreeSpaceListener;
+import com.khmelyuk.memory.space.MemorySpace;
+import com.khmelyuk.memory.space.Space;
 import com.khmelyuk.memory.vm.VirtualMemory;
 import com.khmelyuk.memory.vm.block.VirtualMemoryBlock;
 

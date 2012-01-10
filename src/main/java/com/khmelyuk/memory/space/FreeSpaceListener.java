@@ -1,4 +1,4 @@
-package com.khmelyuk.memory;
+package com.khmelyuk.memory.space;
 
 /**
  * The listener for the free space event.

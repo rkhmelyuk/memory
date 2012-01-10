@@ -1,9 +1,12 @@
-package com.khmelyuk.memory;
+package com.khmelyuk.memory.space;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.khmelyuk.memory.FixedMemoryAllocator;
+import com.khmelyuk.memory.Memory;
 
 import java.io.Serializable;
 
@@ -12,7 +15,7 @@ import java.io.Serializable;
  *
  * @author Ruslan Khmelyuk
  */
-public class SpaceTestCase {
+public class MemorySpaceTestCase {
 
     private Memory memory;
 
@@ -88,7 +91,7 @@ public class SpaceTestCase {
         ro.write(new User());
     }
 
-    private static final class User implements Serializable {
+    public static class User implements Serializable {
         String firstName;
         String lastName;
         int age;

@@ -3,6 +3,8 @@ package com.khmelyuk.memory;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.khmelyuk.memory.space.MemorySpace;
+
 /**
  * Test case for Memory class.
  *

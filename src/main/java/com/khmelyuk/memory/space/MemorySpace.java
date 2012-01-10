@@ -1,4 +1,4 @@
-package com.khmelyuk.memory;
+package com.khmelyuk.memory.space;
 
 import com.khmelyuk.memory.vm.block.NoneMemoryBlock;
 import com.khmelyuk.memory.vm.block.VirtualMemoryBlock;
@@ -8,7 +8,7 @@ import com.khmelyuk.memory.vm.block.VirtualMemoryBlock;
  *
  * @author Ruslan Khmelyuk
  */
-class MemorySpace implements Space {
+public class MemorySpace implements Space {
 
     private VirtualMemoryBlock block;
     private FreeSpaceListener freeSpaceListener;

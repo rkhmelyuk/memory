@@ -1,11 +1,11 @@
-package com.khmelyuk.memory;
+package com.khmelyuk.memory.space;
 
 /**
  * The read only wrapper for specified space.
  *
  * @author Ruslan Khmelyuk
  */
-class ReadOnlySpace implements Space {
+public class ReadOnlySpace implements Space {
 
     private final Space space;
 
