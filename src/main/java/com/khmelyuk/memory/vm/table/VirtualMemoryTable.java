@@ -42,4 +42,11 @@ public interface VirtualMemoryTable {
      * Run memory defragmentation.
      */
     void defragment();
+
+    /**
+     * Reset the table for specified size. This will remove any allocations.
+     *
+     * @param size the new table size.
+     */
+    void reset(int size);
 }

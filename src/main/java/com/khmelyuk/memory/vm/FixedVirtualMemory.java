@@ -19,9 +19,9 @@ public class FixedVirtualMemory implements VirtualMemory {
     private byte[] data;
     private VirtualMemoryTable table;
 
-    public FixedVirtualMemory(byte[] data) {
-        this.data = data;
-        this.table = new LinkedVirtualMemoryTable(data.length);
+    public FixedVirtualMemory(int length, VirtualMemoryTable table) {
+        this.data = new byte[length];
+        this.table = table;
     }
 
     public int size() {
@@ -49,7 +49,7 @@ public class FixedVirtualMemory implements VirtualMemory {
     @Override
     public void free() {
         data = new byte[0];
-        table = new LinkedVirtualMemoryTable(0);
+        table.reset(0);
     }
 
     @Override

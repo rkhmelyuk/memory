@@ -1,6 +1,7 @@
 package com.khmelyuk.memory;
 
 import com.khmelyuk.memory.vm.FixedVirtualMemory;
+import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 
 /**
  * A fixed memory size allocator.
@@ -16,7 +17,7 @@ public class FixedMemoryAllocator {
      * @return the memory with specified size.
      */
     public Memory allocate(int size) {
-        byte[] array = new byte[size];
-        return new Memory(new FixedVirtualMemory(array));
+        return new Memory(new FixedVirtualMemory(size,
+                new LinkedVirtualMemoryTable(size)));
     }
 }

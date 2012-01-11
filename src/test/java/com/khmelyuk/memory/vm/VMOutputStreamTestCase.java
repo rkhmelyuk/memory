@@ -3,6 +3,8 @@ package com.khmelyuk.memory.vm;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
+
 import java.io.IOException;
 
 /**
@@ -12,7 +14,7 @@ public class VMOutputStreamTestCase {
 
     @Test
     public void testWrite() throws Exception {
-        VirtualMemory memory = new FixedVirtualMemory(new byte[100]);
+        VirtualMemory memory = createVirtualMemory(100);
 
         VMOutputStream s = new VMOutputStream(memory);
         s.write(new byte[]{10, 20, 30});
@@ -24,7 +26,7 @@ public class VMOutputStreamTestCase {
 
     @Test
     public void testWrite_Window() throws Exception {
-        VirtualMemory memory = new FixedVirtualMemory(new byte[100]);
+        VirtualMemory memory = createVirtualMemory(100);
 
         VMOutputStream s = new VMOutputStream(memory, 10, 6);
         s.write(new byte[]{10, 20, 30, 40, 50});
@@ -37,10 +39,9 @@ public class VMOutputStreamTestCase {
         Assert.assertEquals(0, memory.read(15));
     }
 
-
     @Test(expected = IOException.class)
     public void testWrite_Limited() throws Exception {
-        VirtualMemory memory = new FixedVirtualMemory(new byte[2]);
+        VirtualMemory memory = createVirtualMemory(2);
 
         VMOutputStream s = new VMOutputStream(memory);
         s.write(new byte[]{10, 20, 30});
@@ -48,13 +49,18 @@ public class VMOutputStreamTestCase {
         Assert.fail("Must be failed, as IOException should be thrown!");
     }
 
+
     @Test(expected = IOException.class)
     public void testWrite_StreamLimited() throws Exception {
-        VirtualMemory memory = new FixedVirtualMemory(new byte[10]);
+        VirtualMemory memory = createVirtualMemory(10);
 
         VMOutputStream s = new VMOutputStream(memory, 2, 2);
         s.write(new byte[]{10, 20, 30});
 
         Assert.fail("Must be failed, as IOException should be thrown!");
+    }
+
+    private VirtualMemory createVirtualMemory(int size) {
+        return new FixedVirtualMemory(size, new LinkedVirtualMemoryTable(size));
     }
 }

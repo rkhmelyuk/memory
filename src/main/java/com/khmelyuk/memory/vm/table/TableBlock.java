@@ -5,7 +5,7 @@ package com.khmelyuk.memory.vm.table;
  *
  * @author Ruslan Khmelyuk
  */
-class TableBlock implements Block {
+final class TableBlock implements Block, Comparable<TableBlock> {
 
     private int size;
     private int address;
@@ -47,5 +47,10 @@ class TableBlock implements Block {
         }
 
         return false;
+    }
+
+    @Override
+    public int compareTo(TableBlock o) {
+        return address - o.address;
     }
 }

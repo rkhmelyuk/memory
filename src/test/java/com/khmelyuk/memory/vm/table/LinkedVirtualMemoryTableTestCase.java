@@ -100,4 +100,23 @@ public class LinkedVirtualMemoryTableTestCase {
         Assert.assertEquals(0, table.getUsedMemorySize());
     }
 
+    @Test
+    public void testResetTable() {
+        LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
+        Block block = table.allocate(20);
+
+        Assert.assertNotNull(block);
+        Assert.assertEquals(0, block.getAddress());
+        Assert.assertEquals(20, block.getSize());
+        Assert.assertEquals(180, table.getFreeMemorySize());
+        Assert.assertEquals(20, table.getUsedMemorySize());
+
+        table.reset(0);
+
+        Assert.assertEquals(0, table.getFreeMemorySize());
+        Assert.assertEquals(0, table.getUsed().size());
+        Assert.assertEquals(1, table.getFree().size());
+
+    }
+
 }

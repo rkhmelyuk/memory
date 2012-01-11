@@ -13,26 +13,31 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     /**
      * After how many frees run a memory defragment function.
      */
-    public static final int DEFRAGMENT_AFTER_FREES = 10;
+    public static final int DEFRAGMENT_AFTER_FREES = 15;
 
-    private int freesCount = 0;
-    private final LinkedList<TableBlock> used = new LinkedList<TableBlock>();
-    private final LinkedList<TableBlock> free = new LinkedList<TableBlock>();
+    private final List<TableBlock> used = new LinkedList<TableBlock>();
+    private final List<TableBlock> free = new LinkedList<TableBlock>();
+
+    protected int freesCount = 0;
 
     public LinkedVirtualMemoryTable(int size) {
         free.add(new TableBlock(0, size));
     }
 
-    public LinkedList<TableBlock> getUsed() {
+    public List<TableBlock> getUsed() {
         return used;
     }
 
-    public LinkedList<TableBlock> getFree() {
+    public List<TableBlock> getFree() {
         return free;
     }
 
     public Block allocate(int size) {
         TableBlock freeBlock = getBlockToAllocate(size);
+        if (freeBlock == null) {
+            defragment();
+            freeBlock = getBlockToAllocate(size);
+        }
         if (freeBlock != null) {
             if (freeBlock.getSize() == size) {
                 free.remove(freeBlock);
@@ -47,12 +52,11 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                 insertBlock(used, result);
                 return result;
             }
-
         }
         return null;
     }
 
-    private TableBlock getBlockToAllocate(int size) {
+    protected TableBlock getBlockToAllocate(int size) {
         for (TableBlock each : free) {
             if (each.getSize() >= size) {
                 return each;
@@ -79,7 +83,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         return false;
     }
 
-    private boolean ifNeedDefragmentation() {
+    protected boolean ifNeedDefragmentation() {
         if (free.size() > 1) {
             if (freesCount++ == DEFRAGMENT_AFTER_FREES) {
                 return true;
@@ -98,22 +102,27 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
      * and decrease the number of elements in the table, to decrease iteration time.
      */
     public void defragment() {
-        TableBlock prev = free.getFirst();
-        List<TableBlock> remove = new LinkedList<TableBlock>();
-        for (TableBlock each : free) {
-            int end = prev.getAddress() + prev.getSize();
-            if (each.getAddress() == end) {
-                each.setAddress(prev.getAddress());
-                each.setSize(prev.getSize() + each.getSize());
+        if (free.size() > 1) {
+            TableBlock prev = free.get(0);
+            final List<TableBlock> remove = new LinkedList<TableBlock>();
+            for (final TableBlock each : free) {
+                if (prev != null) {
+                    int end = prev.getAddress() + prev.getSize();
+                    if (each.getAddress() == end) {
+                        each.setAddress(prev.getAddress());
+                        each.setSize(prev.getSize() + each.getSize());
 
-                prev.setAddress(-1);
-                prev.setSize(0);
-                remove.add(prev);
+                        prev.setAddress(-1);
+                        prev.setSize(0);
+
+                        remove.add(prev);
+                    }
+                }
+                prev = each;
             }
-            prev = each;
-        }
 
-        free.removeAll(remove);
+            free.removeAll(remove);
+        }
     }
 
     /**
@@ -121,8 +130,8 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
      *
      * @param block the block that need to be added to the free memory list.
      */
-    private void addFreeBlock(TableBlock block) {
-        int end = block.getAddress() + block.getSize();
+    protected void addFreeBlock(TableBlock block) {
+        /*int end = block.getAddress() + block.getSize();
 
         TableBlock main = null;
         for (TableBlock each : free) {
@@ -137,11 +146,9 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             main.setAddress(block.getAddress());
             main.setSize(block.getSize() + main.getSize());
             return;
-        }
+        }*/
 
-        TableBlock freeBlock = new TableBlock(
-                block.getAddress(), block.getSize());
-        insertBlock(free, freeBlock);
+        insertBlock(free, new TableBlock(block.getAddress(), block.getSize()));
     }
 
     public int getFreeMemorySize() {
@@ -152,7 +159,20 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         return getTotalLength(used);
     }
 
-    private static TableBlock getSimilarBlock(LinkedList<TableBlock> list, Block block) {
+    public void reset(int size) {
+        used.clear();
+        free.clear();
+        free.add(new TableBlock(0, size));
+    }
+
+    /**
+     * Gets the same block or block with such address and size.
+     *
+     * @param list  the list to find a similar block in.
+     * @param block the block to find similar to it.
+     * @return the found similar block or null.
+     */
+    protected static TableBlock getSimilarBlock(List<TableBlock> list, Block block) {
         for (TableBlock each : list) {
             if (each.equals(block)) {
                 return each;
@@ -161,9 +181,9 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         return null;
     }
 
-    private static void insertBlock(LinkedList<TableBlock> list, TableBlock block) {
+    private static void insertBlock(List<TableBlock> list, TableBlock block) {
         int index = 0;
-        int address = block.getAddress();
+        final int address = block.getAddress();
         for (TableBlock each : list) {
             if (address <= each.getAddress()) {
                 break;

@@ -3,6 +3,8 @@ package com.khmelyuk.memory.vm;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
+
 /**
  * @author Ruslan Khmelyuk
  */
@@ -10,7 +12,7 @@ public class VMInputStreamTestCase {
 
     @Test
     public void testRead() throws Exception {
-        VirtualMemory memory = new FixedVirtualMemory(new byte[100]);
+        VirtualMemory memory = createVirtualMemory(100);
         memory.write(new byte[]{10, 20, 30});
 
         VMInputStream s = new VMInputStream(memory);
@@ -37,7 +39,7 @@ public class VMInputStreamTestCase {
 
     @Test
     public void testRead_Limited() throws Exception {
-        VirtualMemory memory = new FixedVirtualMemory(new byte[100]);
+        VirtualMemory memory = createVirtualMemory(100);
         memory.write(new byte[]{10, 20, 30});
 
         VMInputStream s = new VMInputStream(memory, 0, 3);
@@ -61,7 +63,7 @@ public class VMInputStreamTestCase {
 
     @Test
     public void testRead_Window() throws Exception {
-        VirtualMemory memory = new FixedVirtualMemory(new byte[100]);
+        VirtualMemory memory = createVirtualMemory(100);
         memory.write(new byte[]{10, 20, 30});
 
         VMInputStream s = new VMInputStream(memory, 2, 3);
@@ -79,7 +81,7 @@ public class VMInputStreamTestCase {
 
     @Test
     public void testSkip() throws Exception {
-        VirtualMemory memory = new FixedVirtualMemory(new byte[100]);
+        VirtualMemory memory = createVirtualMemory(100);
         VMInputStream s = new VMInputStream(memory);
 
         Assert.assertEquals(10, s.skip(10));
@@ -88,7 +90,7 @@ public class VMInputStreamTestCase {
 
     @Test
     public void testReset() throws Exception {
-        VirtualMemory memory = new FixedVirtualMemory(new byte[100]);
+        VirtualMemory memory = createVirtualMemory(100);
         VMInputStream s = new VMInputStream(memory);
 
         Assert.assertEquals(10, s.skip(10));
@@ -96,5 +98,9 @@ public class VMInputStreamTestCase {
 
         s.reset();
         Assert.assertEquals(100, s.available());
+    }
+
+    private VirtualMemory createVirtualMemory(int size) {
+        return new FixedVirtualMemory(size, new LinkedVirtualMemoryTable(size));
     }
 }
