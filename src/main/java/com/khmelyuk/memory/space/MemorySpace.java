@@ -1,7 +1,6 @@
 package com.khmelyuk.memory.space;
 
-import com.khmelyuk.memory.vm.block.NoneMemoryBlock;
-import com.khmelyuk.memory.vm.block.VirtualMemoryBlock;
+import com.khmelyuk.memory.vm.VirtualMemoryBlock;
 
 /**
  * Represents a space in memory, some part of memory.
@@ -26,13 +25,12 @@ public class MemorySpace implements Space {
     }
 
     public int size() {
-        return block.length();
+        return block.size();
     }
 
     public void free() {
         if (freeSpaceListener != null) {
             freeSpaceListener.onFreeSpace(this);
-            block = NoneMemoryBlock.instance();
         }
     }
 
@@ -54,5 +52,9 @@ public class MemorySpace implements Space {
 
     public Space readOnly() {
         return new ReadOnlySpace(this);
+    }
+
+    public VirtualMemoryBlock getBlock() {
+        return block;
     }
 }

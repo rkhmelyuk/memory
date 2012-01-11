@@ -1,5 +1,7 @@
 package com.khmelyuk.memory.space;
 
+import com.khmelyuk.memory.vm.VirtualMemoryBlock;
+
 /**
  * The read only wrapper for specified space.
  *
@@ -43,5 +45,9 @@ public class ReadOnlySpace implements Space {
 
     public Space readOnly() {
         return this;
+    }
+
+    public VirtualMemoryBlock getBlock() {
+        return space.getBlock();
     }
 }

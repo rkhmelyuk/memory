@@ -1,7 +1,5 @@
 package com.khmelyuk.memory.vm;
 
-import com.khmelyuk.memory.OutOfBoundException;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -21,7 +19,7 @@ public class VMInputStream extends InputStream {
     public VMInputStream(VirtualMemory vm) {
         this.vm = vm;
         this.offset = 0;
-        this.length = vm.length();
+        this.length = vm.size();
     }
 
     public VMInputStream(VirtualMemory vm, int offset, int length) {

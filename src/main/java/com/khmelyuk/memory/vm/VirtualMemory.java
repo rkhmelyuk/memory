@@ -1,7 +1,7 @@
 package com.khmelyuk.memory.vm;
 
 import com.khmelyuk.memory.OutOfBoundException;
-import com.khmelyuk.memory.vm.block.VirtualMemoryBlock;
+import com.khmelyuk.memory.OutOfMemoryException;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,20 +14,46 @@ import java.io.OutputStream;
 public interface VirtualMemory {
 
     /**
-     * Gets the virtual memory length.
+     * Gets the virtual memory size.
      *
-     * @return the virtual memory length.
+     * @return the virtual memory size.
      */
-    int length();
+    int size();
 
     /**
-     * Returns a block of the virtual memory.
+     * Get how many bytes is free for use.
      *
-     * @param start  the block start index.
-     * @param length the block length.
-     * @return the created virtual memory block.
+     * @return the free size of memory in bytes.
      */
-    VirtualMemoryBlock getBlock(int start, int length);
+    int getFreeSize();
+
+    /**
+     * Get how many bytes is used.
+     *
+     * @return the size of used memory in bytes.
+     */
+    int getUsedSize();
+
+    /**
+     * Allocates a block in the virtual memory.
+     *
+     * @param length the block size.
+     * @return the allocated virtual memory block.
+     * @throws OutOfMemoryException failed to allocate the block of need size.
+     */
+    VirtualMemoryBlock allocate(int length) throws OutOfMemoryException;
+
+    /**
+     * Frees the entire virtual memory.
+     */
+    void free();
+
+    /**
+     * Frees a block of the virtual memory.
+     *
+     * @param block the block to free.
+     */
+    void free(VirtualMemoryBlock block);
 
     // -------------------------------------------------
 
@@ -40,11 +66,11 @@ public interface VirtualMemory {
     InputStream getInputStream();
 
     /**
-     * Gets the virtual memory part within specified offset and length as input stream.
+     * Gets the virtual memory part within specified offset and size as input stream.
      * Returned InputStream reads directly from the virtual memory.
      *
      * @param offset the input stream offset.
-     * @param length the input stream length.
+     * @param length the input stream size.
      * @return the virtual memory part as input stream.
      * @throws OutOfBoundException error to access the memory out of bound.
      */
@@ -63,7 +89,7 @@ public interface VirtualMemory {
      * Returned OutputStream writes directly to the virtual memory.
      *
      * @param offset the input stream offset.
-     * @param length the input stream length.
+     * @param length the input stream size.
      * @return the virtual memory part as output stream.
      * @throws OutOfBoundException error to access the memory out of bound.
      */
@@ -97,11 +123,11 @@ public interface VirtualMemory {
 
     /**
      * Writes the byte array directly to the virtual memory
-     * started from specified offset and with specified length.
+     * started from specified offset and with specified size.
      *
      * @param data   the byte array to write to the virtual memory.
      * @param offset the offset to write from.
-     * @param length the length of the data to write to.
+     * @param length the size of the data to write to.
      * @throws OutOfBoundException error to access the memory out of bound.
      */
     void write(byte[] data, int offset, int length) throws OutOfBoundException;
@@ -123,7 +149,7 @@ public interface VirtualMemory {
     byte read(int offset);
 
     /**
-     * Read data from virtual memory into byte array from specified offset and with specified length.
+     * Read data from virtual memory into byte array from specified offset and with specified size.
      *
      * @param data   the buffer to read data from VM to.
      * @param offset the offset of the
@@ -131,5 +157,4 @@ public interface VirtualMemory {
      * @return the number of read bytes.
      */
     int read(byte[] data, int offset, int length);
-
 }

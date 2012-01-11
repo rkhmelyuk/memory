@@ -21,7 +21,7 @@ public class MemoryTestCase {
         Assert.assertEquals(20 * Memory.KB, memory.size());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testFree() {
         FixedMemoryAllocator allocator = new FixedMemoryAllocator();
         Memory memory = allocator.allocate(20 * Memory.KB);
@@ -108,7 +108,7 @@ public class MemoryTestCase {
         space2.free();
 
         Assert.assertEquals(0, space2.size());
-        Assert.assertEquals(-1, space2.getAddress());
+        Assert.assertEquals(0, space2.getAddress());
         Assert.assertEquals(15 * Memory.KB, memory.getFreeMemorySize());
 
         MemorySpace space3 = memory.allocate(5 * Memory.KB);
@@ -148,7 +148,7 @@ public class MemoryTestCase {
         space2.free();
 
         Assert.assertEquals(0, space2.size());
-        Assert.assertEquals(-1, space2.getAddress());
+        Assert.assertEquals(0, space2.getAddress());
         Assert.assertEquals(10 * Memory.KB, memory.getFreeMemorySize());
 
         MemorySpace space4 = memory.allocate(5 * Memory.KB);

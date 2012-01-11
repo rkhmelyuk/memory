@@ -21,7 +21,7 @@ public class VMOutputStream extends OutputStream {
     public VMOutputStream(VirtualMemory vm) {
         this.vm = vm;
         this.offset = 0;
-        this.length = vm.length();
+        this.length = vm.size();
     }
 
     public VMOutputStream(VirtualMemory vm, int offset, int length) {
@@ -29,7 +29,7 @@ public class VMOutputStream extends OutputStream {
         this.offset = offset;
         this.length = length;
 
-        if (offset + length > vm.length()) {
+        if (offset + length > vm.size()) {
             throw new OutOfBoundException();
         }
     }

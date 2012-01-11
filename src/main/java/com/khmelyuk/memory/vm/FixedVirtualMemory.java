@@ -1,8 +1,10 @@
 package com.khmelyuk.memory.vm;
 
 import com.khmelyuk.memory.OutOfBoundException;
-import com.khmelyuk.memory.vm.block.SimpleVirtualMemoryBlock;
-import com.khmelyuk.memory.vm.block.VirtualMemoryBlock;
+import com.khmelyuk.memory.OutOfMemoryException;
+import com.khmelyuk.memory.vm.table.Block;
+import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
+import com.khmelyuk.memory.vm.table.VirtualMemoryTable;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,17 +17,44 @@ import java.io.OutputStream;
 public class FixedVirtualMemory implements VirtualMemory {
 
     private byte[] data;
+    private VirtualMemoryTable table;
 
     public FixedVirtualMemory(byte[] data) {
         this.data = data;
+        this.table = new LinkedVirtualMemoryTable(data.length);
     }
 
-    public int length() {
+    public int size() {
         return data.length;
     }
 
-    public VirtualMemoryBlock getBlock(int address, int length) {
-        return new SimpleVirtualMemoryBlock(this, address, length);
+    public int getFreeSize() {
+        return table.getFreeMemorySize();
+    }
+
+    public int getUsedSize() {
+        return table.getUsedMemorySize();
+    }
+
+    @Override
+    public VirtualMemoryBlock allocate(int length) throws OutOfMemoryException {
+        Block block = table.allocate(length);
+        if (block == null) {
+            throw new OutOfMemoryException();
+        }
+
+        return new VirtualMemoryBlock(this, block);
+    }
+
+    @Override
+    public void free() {
+        data = new byte[0];
+        table = new LinkedVirtualMemoryTable(0);
+    }
+
+    @Override
+    public void free(VirtualMemoryBlock block) {
+        table.free(block.getBlock());
     }
 
     // ---------------------------------------------- Read/write support
@@ -35,7 +64,7 @@ public class FixedVirtualMemory implements VirtualMemory {
     }
 
     public InputStream getInputStream(int offset, int length) throws OutOfBoundException {
-        if (offset + length > length()) {
+        if (offset + length > size()) {
             throw new OutOfBoundException();
         }
 
@@ -47,7 +76,7 @@ public class FixedVirtualMemory implements VirtualMemory {
     }
 
     public OutputStream getOutputStream(int offset, int length) throws OutOfBoundException {
-        if (offset + length > length()) {
+        if (offset + length > size()) {
             throw new OutOfBoundException();
         }
 
