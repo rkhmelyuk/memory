@@ -31,14 +31,14 @@ public class TablePerformanceTestCase {
         System.out.println("LTP: Avg. duration " + (total / N) + "ms");
     }
 
-    private long testPerformance(VirtualMemoryTable table, int n) {
+    private static long testPerformance(VirtualMemoryTable table, int n) {
         int max = COUNT_COEFF * (n + 5);
         int avgBlockSize = table.getFreeMemorySize() / max;
 
         Block[] blocks = new Block[max];
         long begin = System.currentTimeMillis();
         for (int i = 0; i < max; i++) {
-            blocks[i] = table.allocate(avgBlockSize - i * 10);
+            blocks[i] = table.allocate(avgBlockSize);
             if (i != 0) {
                 free(table, blocks, i - 1);
             }
@@ -46,7 +46,7 @@ public class TablePerformanceTestCase {
         return (System.currentTimeMillis() - begin);
     }
 
-    private void free(VirtualMemoryTable table, Block[] blocks, int n) {
+    private static void free(VirtualMemoryTable table, Block[] blocks, int n) {
         if (n > 2) {
             table.free(blocks[n - 2]);
         }

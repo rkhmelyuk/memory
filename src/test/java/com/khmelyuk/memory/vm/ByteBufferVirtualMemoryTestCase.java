@@ -5,10 +5,12 @@ import org.junit.Test;
 
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author Ruslan Khmelyuk
  */
-public class FixedVirtualMemoryTestCase {
+public class ByteBufferVirtualMemoryTestCase {
 
     @Test
     public void testLength() {
@@ -68,8 +70,10 @@ public class FixedVirtualMemoryTestCase {
         Assert.assertEquals(0, memory.getUsedSize());
     }
 
-    private FixedVirtualMemory createVirtualMemory(int size) {
-        return new FixedVirtualMemory(size, new LinkedVirtualMemoryTable(size));
+    private VirtualMemory createVirtualMemory(int size) {
+        return new ByteBufferVirtualMemory(
+                ByteBuffer.allocate(size),
+                new LinkedVirtualMemoryTable(size));
     }
 
 }

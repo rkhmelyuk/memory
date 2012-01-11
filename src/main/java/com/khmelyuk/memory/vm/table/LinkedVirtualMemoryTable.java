@@ -1,5 +1,7 @@
 package com.khmelyuk.memory.vm.table;
 
+import com.khmelyuk.memory.OutOfBoundException;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -33,6 +35,10 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     }
 
     public Block allocate(int size) {
+        if (size < 0) {
+            throw new OutOfBoundException("Size can't be negative: " + size);
+        }
+
         TableBlock freeBlock = getBlockToAllocate(size);
         if (freeBlock == null && defragment()) {
             freeBlock = getBlockToAllocate(size);

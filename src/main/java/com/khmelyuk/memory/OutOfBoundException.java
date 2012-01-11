@@ -7,4 +7,14 @@ package com.khmelyuk.memory;
  */
 public class OutOfBoundException extends MemoryException {
 
+    public OutOfBoundException() {
+    }
+
+    public OutOfBoundException(String message) {
+        super(message);
+    }
+
+    public OutOfBoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

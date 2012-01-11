@@ -7,24 +7,25 @@ import com.khmelyuk.memory.vm.table.VirtualMemoryTable;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Represents a virtual memory of fixed size.
  *
  * @author Ruslan Khmelyuk
  */
-public class FixedVirtualMemory implements VirtualMemory {
+public class ByteBufferVirtualMemory implements VirtualMemory {
 
-    private byte[] data;
+    private ByteBuffer data;
     private VirtualMemoryTable table;
 
-    public FixedVirtualMemory(int length, VirtualMemoryTable table) {
-        this.data = new byte[length];
+    public ByteBufferVirtualMemory(ByteBuffer data, VirtualMemoryTable table) {
+        this.data = data;
         this.table = table;
     }
 
     public int size() {
-        return data.length;
+        return data.capacity();
     }
 
     public int getFreeSize() {
@@ -37,6 +38,7 @@ public class FixedVirtualMemory implements VirtualMemory {
 
     @Override
     public VirtualMemoryBlock allocate(int length) throws OutOfMemoryException, OutOfBoundException {
+
         if (length < 0) {
             throw new OutOfBoundException();
         }
@@ -51,7 +53,7 @@ public class FixedVirtualMemory implements VirtualMemory {
 
     @Override
     public void free() {
-        data = new byte[0];
+        data = ByteBuffer.allocate(0);
         table.reset(0);
     }
 
@@ -87,42 +89,48 @@ public class FixedVirtualMemory implements VirtualMemory {
     }
 
     public void write(byte[] data) throws OutOfBoundException {
-        if (data.length > this.data.length) {
+        if (data.length > this.data.capacity()) {
             throw new OutOfBoundException();
         }
 
-        System.arraycopy(data, 0, this.data, 0, data.length);
+        this.data.slice().put(data);
     }
 
     public void write(byte[] data, int offset) throws OutOfBoundException {
-        if (offset >= this.data.length || data.length + offset > this.data.length) {
+        final int length = this.data.capacity();
+        if (offset >= length || data.length + offset > length) {
             throw new OutOfBoundException();
         }
 
-        System.arraycopy(data, 0, this.data, 0, data.length);
+        ByteBuffer buf = this.data.slice();
+        buf.position(offset);
+        buf.put(data);
     }
 
     public void write(byte[] data, int offset, int length) throws OutOfBoundException {
-        if (offset >= this.data.length || length + offset > this.data.length) {
+        final int dataLength = this.data.capacity();
+        if (offset >= dataLength || length + offset > dataLength) {
             throw new OutOfBoundException();
         }
 
-        System.arraycopy(data, 0, this.data, 0, length);
+        ByteBuffer buf = this.data.slice();
+        buf.position(offset);
+        buf.put(data, 0, length);
     }
 
     public int read(byte[] data) throws OutOfBoundException {
         int length = data.length;
-        if (length > this.data.length) {
-            length = this.data.length;
+        if (length > this.data.capacity()) {
+            length = this.data.capacity();
         }
 
-        System.arraycopy(this.data, 0, data, 0, length);
+        this.data.get(data, 0, length);
 
         return length;
     }
 
     public int read(byte[] data, int offset, int length) {
-        int dataLen = this.data.length;
+        int dataLen = this.data.capacity();
         if (offset + length > dataLen) {
             length = dataLen - offset;
         }
@@ -130,22 +138,26 @@ public class FixedVirtualMemory implements VirtualMemory {
             return -1;
         }
 
-        System.arraycopy(this.data, offset, data, 0, length);
+        ByteBuffer buf = this.data.slice();
+        buf.position(offset);
+        buf.get(data, 0, length);
 
         return length;
     }
 
     public void write(byte data, int offset) throws OutOfBoundException {
-        if (offset >= this.data.length) {
+        if (offset >= this.data.capacity()) {
             throw new OutOfBoundException();
         }
-        this.data[offset] = data;
+
+        this.data.put(offset, data);
     }
 
     public byte read(int offset) {
-        if (offset >= this.data.length) {
+        if (offset >= this.data.capacity()) {
             return -1;
         }
-        return this.data[offset];
+
+        return data.get(offset);
     }
 }
