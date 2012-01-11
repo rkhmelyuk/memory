@@ -40,8 +40,9 @@ public interface VirtualMemoryTable {
 
     /**
      * Run memory defragmentation.
+     * @return true if defragmentation was run over memory, otherwise false.
      */
-    void defragment();
+    boolean defragment();
 
     /**
      * Reset the table for specified size. This will remove any allocations.

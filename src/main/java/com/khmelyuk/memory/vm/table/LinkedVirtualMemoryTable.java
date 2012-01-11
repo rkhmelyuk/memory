@@ -34,8 +34,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
     public Block allocate(int size) {
         TableBlock freeBlock = getBlockToAllocate(size);
-        if (freeBlock == null) {
-            defragment();
+        if (freeBlock == null && defragment()) {
             freeBlock = getBlockToAllocate(size);
         }
         if (freeBlock != null) {
@@ -88,7 +87,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             if (freesCount++ == DEFRAGMENT_AFTER_FREES) {
                 return true;
             }
-            if (used.size() == 0) {
+            if (used.isEmpty()) {
                 return true;
             }
         }
@@ -101,9 +100,9 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
      * This will remove small parts and will allow allocate large memory
      * and decrease the number of elements in the table, to decrease iteration time.
      */
-    public void defragment() {
+    public boolean defragment() {
         if (free.size() > 1) {
-            TableBlock prev = free.get(0);
+            TableBlock prev = null;
             final List<TableBlock> remove = new LinkedList<TableBlock>();
             for (final TableBlock each : free) {
                 if (prev != null) {
@@ -122,7 +121,10 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             }
 
             free.removeAll(remove);
+            return !remove.isEmpty();
         }
+
+        return false;
     }
 
     /**

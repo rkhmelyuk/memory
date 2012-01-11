@@ -1,5 +1,6 @@
 package com.khmelyuk.memory.vm.table;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.khmelyuk.memory.Memory;
@@ -15,16 +16,10 @@ public class TablePerformanceTestCase {
     static final int SIZE = 2 * Memory.MB;
     static final int COUNT_COEFF = 2000;
 
-    /*@Test
-    public void testArrayTablePerformance() {
-        long total = 0;
-
-        for (int i = 0; i < N; i++) {
-            total += testPerformance(new ArrayVirtualMemoryTable(SIZE), i);
-        }
-
-        System.out.println("ATP: Avg. duration " + (total / N) + "ms");
-    }*/
+    @Before
+    public void setUp() {
+        testPerformance(new LinkedVirtualMemoryTable(SIZE), 0);
+    }
 
     @Test
     public void testLinkedTablePerformance() {
