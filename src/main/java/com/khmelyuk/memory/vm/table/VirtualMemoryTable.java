@@ -40,6 +40,7 @@ public interface VirtualMemoryTable {
 
     /**
      * Run memory defragmentation.
+     *
      * @return true if defragmentation was run over memory, otherwise false.
      */
     boolean defragment();
@@ -50,4 +51,13 @@ public interface VirtualMemoryTable {
      * @param size the new table size.
      */
     void reset(int size);
+
+    /**
+     * Changes the table virtual memory size.
+     * This will not affect any existing allocations, but only extend the free size.
+     *
+     * @param size the new size for table.
+     * @return true if size was changed.
+     */
+    boolean increaseSize(int size);
 }

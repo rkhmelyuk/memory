@@ -17,8 +17,8 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
      */
     public static final int DEFRAGMENT_AFTER_FREES = 15;
 
-    private final List<TableBlock> used = new LinkedList<TableBlock>();
-    private final List<TableBlock> free = new LinkedList<TableBlock>();
+    private final LinkedList<TableBlock> used = new LinkedList<TableBlock>();
+    private final LinkedList<TableBlock> free = new LinkedList<TableBlock>();
 
     protected int freesCount = 0;
 
@@ -171,6 +171,22 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         used.clear();
         free.clear();
         free.add(new TableBlock(0, size));
+    }
+
+    @Override
+    public boolean increaseSize(int size) {
+        int freeSize = getFreeMemorySize();
+        int usedSize = getUsedMemorySize();
+        int totalSize = freeSize + usedSize;
+        if (size < usedSize || size <= totalSize) {
+            return false;
+        }
+
+        // increase memory size
+        int newSize = size - totalSize;
+        insertBlock(free, new TableBlock(totalSize, newSize));
+
+        return true;
     }
 
     /**
