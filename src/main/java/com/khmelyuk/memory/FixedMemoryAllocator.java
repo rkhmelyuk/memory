@@ -17,6 +17,8 @@ public class FixedMemoryAllocator {
      * @return the memory with specified size.
      */
     public Memory allocate(int size) {
+        assert size >= 0: "Memory size can't negative";
+
         return new Memory(new FixedVirtualMemory(size,
                 new LinkedVirtualMemoryTable(size)));
     }

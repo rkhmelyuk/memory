@@ -35,7 +35,6 @@ public class FixedVirtualMemory implements VirtualMemory {
         return table.getUsedMemorySize();
     }
 
-    @Override
     public VirtualMemoryBlock allocate(int length) throws OutOfMemoryException, OutOfBoundException {
         if (length < 0) {
             throw new OutOfBoundException();
