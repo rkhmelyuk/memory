@@ -76,15 +76,11 @@ public class LinkedVirtualMemoryTableTestCase {
         int avgBlockSize = 200 / max;
         Block[] blocks = new Block[max];
         for (int i = 0; i < max; i++) {
-            blocks[i] = table.allocate(avgBlockSize - i);
+            blocks[i] = table.allocate(avgBlockSize - i / 2);
             if (i != 0) {
                 table.free(blocks[i - 1]);
             }
         }
-
-
-        Assert.assertEquals(1, table.getUsed().size());
-        Assert.assertEquals(2, table.getFree().size());
 
         table.free(blocks[max - 1]);
 
@@ -116,7 +112,17 @@ public class LinkedVirtualMemoryTableTestCase {
         Assert.assertEquals(0, table.getFreeMemorySize());
         Assert.assertEquals(0, table.getUsed().size());
         Assert.assertEquals(1, table.getFree().size());
+    }
 
+    @Test
+    public void testGrow() {
+        LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
+        table.allocate(20);
+
+        Assert.assertTrue(table.increaseSize(220));
+        Assert.assertEquals(200, table.getFreeMemorySize());
+
+        Assert.assertFalse(table.increaseSize(100));
     }
 
 }
