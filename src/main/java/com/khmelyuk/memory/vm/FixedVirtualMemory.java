@@ -17,14 +17,16 @@ public class FixedVirtualMemory implements VirtualMemory {
 
     private byte[] data;
     private VirtualMemoryTable table;
+    private int size;
 
     public FixedVirtualMemory(int length, VirtualMemoryTable table) {
+        this.size = length;
         this.data = new byte[length];
         this.table = table;
     }
 
     public int size() {
-        return data.length;
+        return size;
     }
 
     public int getFreeSize() {
@@ -52,6 +54,7 @@ public class FixedVirtualMemory implements VirtualMemory {
     public void free() {
         data = new byte[0];
         table.reset(0);
+        size = 0;
     }
 
     @Override
@@ -94,7 +97,7 @@ public class FixedVirtualMemory implements VirtualMemory {
     }
 
     public void write(byte[] data, int offset) throws OutOfBoundException {
-        if (offset >= this.data.length || data.length + offset > this.data.length) {
+        if (offset >= size || data.length + offset > size) {
             throw new OutOfBoundException();
         }
 
@@ -102,7 +105,7 @@ public class FixedVirtualMemory implements VirtualMemory {
     }
 
     public void write(byte[] data, int offset, int length) throws OutOfBoundException {
-        if (offset >= this.data.length || length + offset > this.data.length) {
+        if (offset >= size || length + offset > size) {
             throw new OutOfBoundException();
         }
 
@@ -115,8 +118,8 @@ public class FixedVirtualMemory implements VirtualMemory {
 
     public int read(byte[] data) throws OutOfBoundException {
         int length = data.length;
-        if (length > this.data.length) {
-            length = this.data.length;
+        if (length > size) {
+            length = size;
         }
 
         System.arraycopy(this.data, 0, data, 0, length);
@@ -125,12 +128,11 @@ public class FixedVirtualMemory implements VirtualMemory {
     }
 
     public int read(byte[] data, int offset, int length) {
-        int dataLen = this.data.length;
         if (data.length < length) {
             length = data.length;
         }
-        if (offset + length > dataLen) {
-            length = dataLen - offset;
+        if (offset + length > size) {
+            length = size - offset;
         }
         if (length == 0) {
             return -1;
@@ -142,14 +144,14 @@ public class FixedVirtualMemory implements VirtualMemory {
     }
 
     public void write(byte data, int offset) throws OutOfBoundException {
-        if (offset >= this.data.length) {
+        if (offset >= size) {
             throw new OutOfBoundException();
         }
         this.data[offset] = data;
     }
 
     public byte read(int offset) {
-        if (offset >= this.data.length) {
+        if (offset >= size) {
             return -1;
         }
         return this.data[offset];
