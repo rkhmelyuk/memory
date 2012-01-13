@@ -15,7 +15,7 @@ import java.nio.ByteBuffer;
 public class VMPerformanceTestCase {
 
     static final int N = 5;
-    static final int SIZE = 5 * Memory.MB;
+    static final int SIZE = 10 * Memory.MB;
     static final int COUNT_COEFF = 2000;
 
     @Test
@@ -27,6 +27,29 @@ public class VMPerformanceTestCase {
         }
 
         System.out.println("FVM: Avg. duration " + (total / N) + "ms");
+    }
+
+    @Test
+    public void testDynamicVMPerformance() {
+        testPerformance(createDynamicVirtualMemory(), 0);
+        long total = 0;
+        long avgRead = 0;
+        long avgWrite = 0;
+        long avgAllocation = 0;
+        for (int i = 0; i < N; i++) {
+            DynamicVirtualMemory vm = createDynamicVirtualMemory();
+            total += testPerformance(vm, i);
+
+            avgWrite += vm.avgWrite;
+            avgRead += vm.avgRead;
+            avgAllocation += vm.avgAllocation;
+        }
+
+        System.out.println("avg write " + (avgWrite / N) + "ns");
+        System.out.println("avg read " + (avgRead / N) + "ns");
+        System.out.println("avg alloc " + (avgAllocation / N) + "ns");
+
+        System.out.println("DVM: Avg. duration " + (total / N) + "ms");
     }
 
     @Test
@@ -42,13 +65,16 @@ public class VMPerformanceTestCase {
 
     private long testPerformance(VirtualMemory vm, int n) {
         int max = COUNT_COEFF * (n + 5);
-        int avgBlockSize = vm.getFreeSize() / max;
+        int avgBlockSize = SIZE / max;
 
         long begin = System.currentTimeMillis();
         for (int i = 0; i < max; i++) {
             VirtualMemoryBlock block = vm.allocate(avgBlockSize);
             if (block != null) {
                 write(block);
+            }
+            if (i % 10 == 0) {
+                vm.free(block);
             }
         }
         return (System.currentTimeMillis() - begin);
@@ -68,6 +94,12 @@ public class VMPerformanceTestCase {
     private static VirtualMemory createFixedVirtualMemory() {
         return new FixedVirtualMemory(SIZE,
                 new LinkedVirtualMemoryTable(SIZE));
+    }
+
+    private static DynamicVirtualMemory createDynamicVirtualMemory() {
+        int size = SIZE / 10;
+        return new DynamicVirtualMemory(size, SIZE, size,
+                new LinkedVirtualMemoryTable(size));
     }
 
     private static VirtualMemory createByteBufferVirtualMemory() {
