@@ -43,13 +43,17 @@ public class VirtualMemoryBlock {
     }
 
     public void write(byte[] data) throws OutOfBoundException {
-        if (data.length > block.getSize()) {
+        final int length = data.length;
+        if (length > block.getSize()) {
             throw new OutOfBoundException();
         }
-        vm.write(data, block.getAddress(), block.getSize());
+        vm.write(data, block.getAddress(), length);
     }
 
     public void write(byte[] data, int offset, int length) throws OutOfBoundException {
+        if (data.length < length) {
+            length = data.length;
+        }
         if (offset + length > block.getSize()) {
             throw new OutOfBoundException();
         }
@@ -57,10 +61,20 @@ public class VirtualMemoryBlock {
     }
 
     public int read(byte[] data) {
-        return vm.read(data, block.getAddress(), block.getSize());
+        final int blockSize = block.getSize();
+        if (data.length > blockSize) {
+            throw new OutOfBoundException();
+        }
+        return vm.read(data, block.getAddress(), blockSize);
     }
 
     public int read(byte[] data, int offset, int length) {
+        if (data.length < length) {
+            length = data.length;
+        }
+        if (offset + length > block.getSize()) {
+            throw new OutOfBoundException();
+        }
         return vm.read(data, block.getAddress() + offset, length);
     }
 

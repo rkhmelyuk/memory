@@ -18,6 +18,15 @@ public class DynamicMemoryAllocatorTestCase {
     }
 
     @Test
+    public void testAllocateFixedSize() {
+        DynamicMemoryAllocator allocator = new DynamicMemoryAllocator();
+        Memory memory = allocator.allocate(20 * Memory.KB, 20 * Memory.KB);
+
+        Assert.assertNotNull(memory);
+        Assert.assertEquals(20 * Memory.KB, memory.size());
+    }
+
+    @Test
     public void testAllocateMemory_Grow() {
         DynamicMemoryAllocator allocator = new DynamicMemoryAllocator();
         Memory memory = allocator.allocate(20 * Memory.KB, 40 * Memory.KB, 5 * Memory.KB);

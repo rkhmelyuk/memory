@@ -186,5 +186,6 @@ public class MemoryTestCase {
         Assert.assertEquals(5 * Memory.KB, space3.size());
         Assert.assertEquals(0, space3.getAddress());
         Assert.assertEquals(10 * Memory.KB, memory.getFreeMemorySize());
+        Assert.assertEquals(10 * Memory.KB, memory.getUsedMemorySize());
     }
 }

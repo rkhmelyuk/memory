@@ -5,7 +5,7 @@ package com.khmelyuk.memory;
  *
  * @author Ruslan Khmelyuk
  */
-public class MemoryException extends RuntimeException {
+public abstract class MemoryException extends RuntimeException {
 
     public MemoryException() {
     }

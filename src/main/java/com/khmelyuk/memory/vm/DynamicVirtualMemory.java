@@ -158,12 +158,7 @@ public class DynamicVirtualMemory implements VirtualMemory {
     }
 
     public void write(byte[] data, int offset, int length) throws OutOfBoundException {
-        int dataLength = length;
-        if (data.length < dataLength) {
-            dataLength = data.length;
-        }
-
-        if (offset >= size || dataLength + offset > size) {
+        if (offset >= size || length + offset > size) {
             throw new OutOfBoundException();
         }
 
@@ -171,7 +166,7 @@ public class DynamicVirtualMemory implements VirtualMemory {
         boolean started = false;
 
         final int startIdx = calcStartIndex(offset);
-        final int endIdx = calcEndIndex(offset, dataLength);
+        final int endIdx = calcEndIndex(offset, length);
         int start = calculateStartPosition(startIdx);
         for (int i = startIdx; i <= endIdx; i++) {
             final byte[] each = this.data[i];
@@ -181,13 +176,13 @@ public class DynamicVirtualMemory implements VirtualMemory {
                 final int realLength = eachLength - eachOffset;
                 started = true;
 
-                if (realLength >= dataLength) {
-                    System.arraycopy(data, dataOffset, each, eachOffset, dataLength);
+                if (realLength >= length) {
+                    System.arraycopy(data, dataOffset, each, eachOffset, length);
                     break;
                 }
                 else {
                     System.arraycopy(data, dataOffset, each, eachOffset, realLength);
-                    dataLength -= realLength;
+                    length -= realLength;
                     dataOffset += realLength;
                 }
             }
@@ -227,10 +222,7 @@ public class DynamicVirtualMemory implements VirtualMemory {
         if (data.length < dataLength) {
             dataLength = data.length;
         }
-        if (offset + dataLength > size) {
-            dataLength = size - offset;
-        }
-        if (dataLength == 0) {
+        if (dataLength == 0 || offset + dataLength > size) {
             return -1;
         }
 
@@ -266,7 +258,7 @@ public class DynamicVirtualMemory implements VirtualMemory {
     }
 
     public void write(byte data, int offset) throws OutOfBoundException {
-        if (offset >= this.size) {
+        if (offset >= size) {
             throw new OutOfBoundException();
         }
 
