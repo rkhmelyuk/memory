@@ -47,8 +47,10 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             }
             else {
                 result = new TableBlock(freeBlock.getAddress(), size);
-                freeBlock.setAddress(freeBlock.getAddress() + size);
-                freeBlock.setSize(freeBlock.getSize() - size);
+                freeBlock.resize(
+                        freeBlock.getAddress() + size,
+                        freeBlock.getSize() - size
+                );
             }
 
             insertBlock(used, result);
@@ -82,8 +84,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                 freeMemorySize += freeBlock;
                 usedMemorySize -= freeBlock;
 
-                tableBlock.setAddress(0);
-                tableBlock.setSize(0);
+                tableBlock.resize(0, 0);
 
                 return true;
             }
@@ -127,22 +128,22 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             }
         }
 
+        // if there is a head or tail - then resize and return true
         if (tail != null) {
-            // let's glue the blocks
-            tail.setSize(block.getSize() + tail.getSize());
-
-            if (head != null) {
-                // let's glue the blocks
-                tail.setSize(tail.getSize() + head.getSize());
+            if (head == null) {
+                // only tail is found
+                tail.setSize(block.getSize() + tail.getSize());
+            }
+            else {
+                // head is found, so we just resize tail and remove head
+                tail.setSize(block.getSize() + tail.getSize() + head.getSize());
                 free.remove(head);
             }
 
             return true;
         }
         else if (head != null) {
-            // let's glue the blocks
-            head.setAddress(blockAddress);
-            head.setSize(block.getSize() + head.getSize());
+            head.resize(blockAddress, block.getSize() + head.getSize());
 
             return true;
         }

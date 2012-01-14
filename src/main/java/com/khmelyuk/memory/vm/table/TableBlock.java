@@ -31,6 +31,11 @@ final class TableBlock implements Block, Comparable<TableBlock> {
         this.size = length;
     }
 
+    public void resize(int address, int length) {
+        this.address = address;
+        this.size = length;
+    }
+
     @Override
     public int hashCode() {
         return (size * 31 + address);
