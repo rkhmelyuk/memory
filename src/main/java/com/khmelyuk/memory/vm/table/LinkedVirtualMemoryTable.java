@@ -22,8 +22,14 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
     protected int freesCount = 0;
 
+    private int freeMemorySize = 0;
+    private int usedMemorySize = 0;
+
     public LinkedVirtualMemoryTable(int size) {
         free.add(new TableBlock(0, size));
+
+        freeMemorySize = size;
+        usedMemorySize = 0;
     }
 
     public List<TableBlock> getUsed() {
@@ -44,19 +50,23 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             freeBlock = getBlockToAllocate(size);
         }
         if (freeBlock != null) {
+            final TableBlock result;
             if (freeBlock.getSize() == size) {
+                result = freeBlock;
                 free.remove(freeBlock);
-                insertBlock(used, freeBlock);
-                return freeBlock;
             }
             else {
-                TableBlock result = new TableBlock(freeBlock.getAddress(), size);
+                result = new TableBlock(freeBlock.getAddress(), size);
                 freeBlock.setAddress(freeBlock.getAddress() + size);
                 freeBlock.setSize(freeBlock.getSize() - size);
-
-                insertBlock(used, result);
-                return result;
             }
+
+            insertBlock(used, result);
+
+            freeMemorySize -= size;
+            usedMemorySize += size;
+
+            return result;
         }
         return null;
     }
@@ -74,10 +84,17 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         TableBlock tableBlock = getSimilarBlock(used, block);
         if (tableBlock != null) {
             if (used.remove(tableBlock)) {
-                addFreeBlock(tableBlock);
+                addFreeBlock(new TableBlock(
+                        tableBlock.getAddress(),
+                        tableBlock.getSize()));
+
                 if (ifNeedDefragmentation()) {
                     defragment();
                 }
+
+                int freeBlock = tableBlock.getSize();
+                freeMemorySize += freeBlock;
+                usedMemorySize -= freeBlock;
 
                 tableBlock.setAddress(0);
                 tableBlock.setSize(0);
@@ -107,6 +124,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
      * and decrease the number of elements in the table, to decrease iteration time.
      */
     public boolean defragment() {
+        // TODO - fix
         if (free.size() > 1) {
             TableBlock prev = null;
             final List<TableBlock> remove = new LinkedList<TableBlock>();
@@ -139,52 +157,80 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
      * @param block the block that need to be added to the free memory list.
      */
     protected void addFreeBlock(TableBlock block) {
-        /*int end = block.getAddress() + block.getSize();
+        if (!extendFreeMemory(block)) {
+            insertBlock(free, block);
+        }
+    }
 
-        TableBlock main = null;
+    /**
+     * Tries to find and extend a free memory with specified block.
+     * If memory can't be extended with such block, then returns false.
+     *
+     * @param block the memory block to extend free memory with.
+     * @return true if memory was extended, otherwise false.
+     */
+    protected boolean extendFreeMemory(TableBlock block) {
+        int end = block.getAddress() + block.getSize();
+
+        TableBlock head = null;
+        TableBlock tail = null;
         for (TableBlock each : free) {
             if (each.getAddress() == end) {
-                main = each;
+                head = each;
+                break;
+            }
+            if (each.getAddress() + each.getSize() == block.getAddress()) {
+                tail = each;
                 break;
             }
         }
 
-        if (main != null) {
+        if (head != null) {
             // let's glue the blocks
-            main.setAddress(block.getAddress());
-            main.setSize(block.getSize() + main.getSize());
-            return;
-        }*/
+            head.setAddress(block.getAddress());
+            head.setSize(block.getSize() + head.getSize());
 
-        insertBlock(free, new TableBlock(block.getAddress(), block.getSize()));
+            return true;
+        }
+        else if (tail != null) {
+            // let's glue the blocks
+            tail.setSize(block.getSize() + tail.getSize());
+
+            return true;
+        }
+
+        return false;
     }
 
+
     public int getFreeMemorySize() {
-        return getTotalLength(free);
+        return freeMemorySize;
     }
 
     public int getUsedMemorySize() {
-        return getTotalLength(used);
+        return usedMemorySize;
     }
 
     public void reset(int size) {
         used.clear();
         free.clear();
         free.add(new TableBlock(0, size));
+        freeMemorySize = 0;
+        usedMemorySize = 0;
     }
 
     @Override
     public boolean increaseSize(int size) {
-        int freeSize = getFreeMemorySize();
-        int usedSize = getUsedMemorySize();
-        int totalSize = freeSize + usedSize;
-        if (size < usedSize || size <= totalSize) {
+        final int totalSize = freeMemorySize + usedMemorySize;
+
+        if (size < usedMemorySize || size <= totalSize) {
             return false;
         }
 
         // increase memory size
-        int newSize = size - totalSize;
-        insertBlock(free, new TableBlock(totalSize, newSize));
+        int incSize = size - totalSize;
+        addFreeBlock(new TableBlock(totalSize, incSize));
+        freeMemorySize += incSize;
 
         return true;
     }
@@ -206,23 +252,6 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     }
 
     private static void insertBlock(List<TableBlock> list, TableBlock block) {
-        int index = 0;
-        final int address = block.getAddress();
-        for (TableBlock each : list) {
-            if (address <= each.getAddress()) {
-                break;
-            }
-            index++;
-        }
-
-        list.add(index, block);
-    }
-
-    private static int getTotalLength(List<TableBlock> list) {
-        int result = 0;
-        for (TableBlock each : list) {
-            result += each.getSize();
-        }
-        return result;
+        list.add(0, block);
     }
 }
