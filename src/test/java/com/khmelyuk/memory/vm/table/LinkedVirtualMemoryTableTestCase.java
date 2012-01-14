@@ -69,10 +69,10 @@ public class LinkedVirtualMemoryTableTestCase {
     }
 
     @Test
-    public void testDefragment() {
+    public void testFreeAvoidsFragmentation() {
         LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
 
-        int max = LinkedVirtualMemoryTable.DEFRAGMENT_AFTER_FREES;
+        int max = 20;
         int avgBlockSize = 200 / max;
         Block[] blocks = new Block[max];
         for (int i = 0; i < max; i++) {
@@ -83,11 +83,6 @@ public class LinkedVirtualMemoryTableTestCase {
         }
 
         table.free(blocks[max - 1]);
-
-        Assert.assertEquals(0, table.getUsed().size());
-        Assert.assertEquals(1, table.getFree().size());
-
-        table.defragment();
 
         Assert.assertEquals(0, table.getUsed().size());
         Assert.assertEquals(1, table.getFree().size());

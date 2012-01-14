@@ -12,15 +12,8 @@ import java.util.List;
  */
 public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
-    /**
-     * After how many frees run a memory defragment function.
-     */
-    public static final int DEFRAGMENT_AFTER_FREES = 15;
-
     private final LinkedList<TableBlock> used = new LinkedList<TableBlock>();
     private final LinkedList<TableBlock> free = new LinkedList<TableBlock>();
-
-    protected int freesCount = 0;
 
     private int freeMemorySize = 0;
     private int usedMemorySize = 0;
@@ -45,10 +38,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             throw new OutOfBoundException("Size can't be negative: " + size);
         }
 
-        TableBlock freeBlock = getBlockToAllocate(size);
-        if (freeBlock == null && defragment()) {
-            freeBlock = getBlockToAllocate(size);
-        }
+        final TableBlock freeBlock = getBlockToAllocate(size);
         if (freeBlock != null) {
             final TableBlock result;
             if (freeBlock.getSize() == size) {
@@ -88,10 +78,6 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                         tableBlock.getAddress(),
                         tableBlock.getSize()));
 
-                if (ifNeedDefragmentation()) {
-                    defragment();
-                }
-
                 int freeBlock = tableBlock.getSize();
                 freeMemorySize += freeBlock;
                 usedMemorySize -= freeBlock;
@@ -102,52 +88,6 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                 return true;
             }
         }
-        return false;
-    }
-
-    protected boolean ifNeedDefragmentation() {
-        if (free.size() > 1) {
-            if (freesCount++ == DEFRAGMENT_AFTER_FREES) {
-                return true;
-            }
-            if (used.isEmpty()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Glue some free memory blocks into single block.
-     * This will remove small parts and will allow allocate large memory
-     * and decrease the number of elements in the table, to decrease iteration time.
-     */
-    public boolean defragment() {
-        // TODO - fix
-        if (free.size() > 1) {
-            TableBlock prev = null;
-            final List<TableBlock> remove = new LinkedList<TableBlock>();
-            for (final TableBlock each : free) {
-                if (prev != null) {
-                    int end = prev.getAddress() + prev.getSize();
-                    if (each.getAddress() == end) {
-                        each.setAddress(prev.getAddress());
-                        each.setSize(prev.getSize() + each.getSize());
-
-                        prev.setAddress(-1);
-                        prev.setSize(0);
-
-                        remove.add(prev);
-                    }
-                }
-                prev = each;
-            }
-
-            free.removeAll(remove);
-            return !remove.isEmpty();
-        }
-
         return false;
     }
 
@@ -170,31 +110,39 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
      * @return true if memory was extended, otherwise false.
      */
     protected boolean extendFreeMemory(TableBlock block) {
-        int end = block.getAddress() + block.getSize();
+        final int blockAddress = block.getAddress();
+        final int end = blockAddress + block.getSize();
 
         TableBlock head = null;
         TableBlock tail = null;
         for (TableBlock each : free) {
-            if (each.getAddress() == end) {
+            if (head == null && each.getAddress() == end) {
                 head = each;
-                break;
             }
-            if (each.getAddress() + each.getSize() == block.getAddress()) {
+            else if (tail == null && each.getAddress() + each.getSize() == blockAddress) {
                 tail = each;
+            }
+            if (head != null && tail != null) {
                 break;
             }
         }
 
-        if (head != null) {
+        if (tail != null) {
             // let's glue the blocks
-            head.setAddress(block.getAddress());
-            head.setSize(block.getSize() + head.getSize());
+            tail.setSize(block.getSize() + tail.getSize());
+
+            if (head != null) {
+                // let's glue the blocks
+                tail.setSize(tail.getSize() + head.getSize());
+                free.remove(head);
+            }
 
             return true;
         }
-        else if (tail != null) {
+        else if (head != null) {
             // let's glue the blocks
-            tail.setSize(block.getSize() + tail.getSize());
+            head.setAddress(blockAddress);
+            head.setSize(block.getSize() + head.getSize());
 
             return true;
         }

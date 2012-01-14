@@ -39,13 +39,6 @@ public interface VirtualMemoryTable {
     int getUsedMemorySize();
 
     /**
-     * Run memory defragmentation.
-     *
-     * @return true if defragmentation was run over memory, otherwise false.
-     */
-    boolean defragment();
-
-    /**
      * Reset the table for specified size. This will remove any allocations.
      *
      * @param size the new table size.
