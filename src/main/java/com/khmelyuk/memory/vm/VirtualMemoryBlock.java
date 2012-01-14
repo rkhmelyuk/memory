@@ -14,6 +14,8 @@ import java.io.*;
  */
 public class VirtualMemoryBlock {
 
+    private static final int BUFFER_SIZE = 8192;
+
     private final VirtualMemory vm;
     private final Block block;
 
@@ -62,10 +64,11 @@ public class VirtualMemoryBlock {
 
     public int read(byte[] data) {
         final int blockSize = block.getSize();
+        int length = data.length;
         if (data.length > blockSize) {
-            throw new OutOfBoundException();
+            length = blockSize;
         }
-        return vm.read(data, block.getAddress(), blockSize);
+        return vm.read(data, block.getAddress(), length);
     }
 
     public int read(byte[] data, int offset, int length) {
@@ -73,7 +76,7 @@ public class VirtualMemoryBlock {
             length = data.length;
         }
         if (offset + length > block.getSize()) {
-            throw new OutOfBoundException();
+            return -1;
         }
         return vm.read(data, block.getAddress() + offset, length);
     }
@@ -107,5 +110,18 @@ public class VirtualMemoryBlock {
         catch (ClassNotFoundException e) {
             throw new ReadException("Error to read an object", e);
         }
+    }
+
+    public void dump(OutputStream out) throws IOException {
+        final int blockSize = block.getSize();
+        final int bufferSize = blockSize < BUFFER_SIZE ? blockSize : BUFFER_SIZE;
+
+        int length, offset = 0;
+        final byte[] buffer = new byte[bufferSize];
+        while ((length = read(buffer, offset, bufferSize)) != -1) {
+            out.write(buffer, 0, length);
+            offset += length;
+        }
+
     }
 }

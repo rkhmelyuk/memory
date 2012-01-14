@@ -6,6 +6,7 @@ import org.junit.Test;
 import com.khmelyuk.memory.OutOfBoundException;
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -92,7 +93,7 @@ public class VirtualMemoryBlockTestCase {
         block.write(new byte[]{10, 20, 30}, 3, 3);
     }
 
-    @Test(expected = OutOfBoundException.class)
+    @Test
     public void testReadWithOffsetAndLengthOutOfBound() {
         VirtualMemory memory = new FixedVirtualMemory(10, new LinkedVirtualMemoryTable(10));
         VirtualMemoryBlock block1 = memory.allocate(5);
@@ -104,7 +105,7 @@ public class VirtualMemoryBlockTestCase {
         block1.read(new byte[5], 2, 5);
     }
 
-    @Test(expected = OutOfBoundException.class)
+    @Test
     public void testReadOutOfBound() {
         VirtualMemory memory = new FixedVirtualMemory(10, new LinkedVirtualMemoryTable(10));
         VirtualMemoryBlock block1 = memory.allocate(5);
@@ -114,5 +115,20 @@ public class VirtualMemoryBlockTestCase {
         block2.write(new byte[]{10, 20, 30});
 
         block1.read(new byte[10]);
+    }
+
+    @Test
+    public void testDump() throws Exception {
+        VirtualMemory memory = new FixedVirtualMemory(10, new LinkedVirtualMemoryTable(10));
+        VirtualMemoryBlock block = memory.allocate(5);
+        byte[] data = {10, 20, 30, 40, 50};
+
+        block.write(data);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream(5);
+        block.dump(out);
+
+        byte[] read = out.toByteArray();
+        Assert.assertArrayEquals(data, read);
     }
 }

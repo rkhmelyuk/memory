@@ -2,6 +2,9 @@ package com.khmelyuk.memory.space;
 
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * The read only wrapper for specified space.
  *
@@ -49,5 +52,9 @@ public class ReadOnlySpace implements Space {
 
     public VirtualMemoryBlock getBlock() {
         return space.getBlock();
+    }
+
+    public void dump(OutputStream out) throws IOException {
+        space.dump(out);
     }
 }

@@ -2,6 +2,9 @@ package com.khmelyuk.memory.space;
 
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * Represents a space in the memory, some part of memory.
  *
@@ -69,4 +72,13 @@ public interface Space {
      * @return the read only version of this space.
      */
     Space readOnly();
+
+    /**
+     * Dump the content of the space to the output stream.
+     *
+     * @param out the output stream to write the space content to.
+     * @throws IOException error to dump content.
+     */
+    void dump(OutputStream out) throws IOException;
+
 }

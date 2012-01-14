@@ -2,6 +2,9 @@ package com.khmelyuk.memory.space;
 
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * Represents a space in memory, some part of memory.
  *
@@ -56,5 +59,9 @@ public class MemorySpace implements Space {
 
     public VirtualMemoryBlock getBlock() {
         return block;
+    }
+
+    public void dump(OutputStream out) throws IOException {
+        block.dump(out);
     }
 }
