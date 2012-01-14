@@ -50,14 +50,12 @@ public class FixedVirtualMemory implements VirtualMemory {
         return new VirtualMemoryBlock(this, block);
     }
 
-    @Override
     public void free() {
         data = new byte[0];
         table.reset(0);
         size = 0;
     }
 
-    @Override
     public void free(VirtualMemoryBlock block) {
         table.free(block.getBlock());
     }
