@@ -23,9 +23,7 @@ public class DynamicVirtualMemory implements VirtualMemory {
     private final int growth;
     private final VirtualMemoryTable table;
 
-    long avgAllocation = 0;
-    long avgRead = 0;
-    long avgWrite = 0;
+    private final float oneGrowth;
 
     public DynamicVirtualMemory(int size, int maxSize, int growth, VirtualMemoryTable table) {
         growth = (growth != 0 ? growth : 1);
@@ -37,6 +35,7 @@ public class DynamicVirtualMemory implements VirtualMemory {
         this.maxSize = maxSize;
         this.growth = growth;
         this.table = table;
+        this.oneGrowth = 1f / growth;
     }
 
     public int size() {
@@ -55,7 +54,6 @@ public class DynamicVirtualMemory implements VirtualMemory {
         if (length < 0) {
             throw new OutOfBoundException();
         }
-        long begin = System.nanoTime();
 
         Block block = table.allocate(length);
         while (block == null) {
@@ -70,8 +68,6 @@ public class DynamicVirtualMemory implements VirtualMemory {
         if (block == null) {
             throw new OutOfMemoryException();
         }
-
-        avgAllocation = (avgAllocation + (System.nanoTime() - begin)) / 2;
 
         return new VirtualMemoryBlock(this, block);
     }
@@ -123,14 +119,14 @@ public class DynamicVirtualMemory implements VirtualMemory {
     }
 
     public void write(byte[] data) throws OutOfBoundException {
-        //write(data, 0, data.length);
-        if (data.length > size) {
+        int dataLength = data.length;
+        if (dataLength > size) {
             throw new OutOfBoundException();
         }
 
         int dataOffset = 0;
-        int dataLength = data.length;
-        for (int i = 0; i < count; i++) {
+        final int endIdx = calcEndIndex(0, dataLength);
+        for (int i = 0; i <= endIdx; i++) {
             final byte[] each = this.data[i];
             final int eachLength = each.length;
             if (eachLength >= dataLength) {
@@ -159,12 +155,13 @@ public class DynamicVirtualMemory implements VirtualMemory {
             throw new OutOfBoundException();
         }
 
-        long begin = System.nanoTime();
-
-        int start = 0;
         int dataOffset = 0;
         boolean started = false;
-        for (int i = 0; i < count; i++) {
+
+        final int startIdx = calcStartIndex(offset);
+        final int endIdx = calcEndIndex(offset, dataLength);
+        int start = calculateStartPosition(startIdx);
+        for (int i = startIdx; i <= endIdx; i++) {
             final byte[] each = this.data[i];
             final int eachLength = each.length;
             if (started || (offset >= start && offset < start + eachLength)) {
@@ -184,8 +181,6 @@ public class DynamicVirtualMemory implements VirtualMemory {
             }
             start += eachLength;
         }
-
-        avgWrite = (avgWrite + (System.nanoTime() - begin)) / 2;
     }
 
     public int read(byte[] data) throws OutOfBoundException {
@@ -195,7 +190,8 @@ public class DynamicVirtualMemory implements VirtualMemory {
         }
 
         int dataOffset = 0;
-        for (int i = 0; i < count; i++) {
+        final int endIdx = calcEndIndex(0, dataLength);
+        for (int i = 0; i <= endIdx; i++) {
             final byte[] each = this.data[i];
             final int eachLength = each.length;
 
@@ -226,12 +222,13 @@ public class DynamicVirtualMemory implements VirtualMemory {
             return -1;
         }
 
-        long begin = System.nanoTime();
-
-        int start = 0;
         int dataOffset = 0;
         boolean started = false;
-        for (int i = 0; i < count; i++) {
+
+        final int startIdx = calcStartIndex(offset);
+        final int endIdx = calcEndIndex(offset, dataLength);
+        int start = calculateStartPosition(startIdx);
+        for (int i = startIdx; i <= endIdx; i++) {
             final byte[] each = this.data[i];
             final int eachLength = each.length;
             if (started || (offset >= start && offset < start + eachLength)) {
@@ -252,8 +249,6 @@ public class DynamicVirtualMemory implements VirtualMemory {
             start += eachLength;
         }
 
-        avgRead = (avgRead + (System.nanoTime() - begin)) / 2;
-
         int read = dataOffset + dataLength;
         return read != 0 ? read : -1;
     }
@@ -263,17 +258,10 @@ public class DynamicVirtualMemory implements VirtualMemory {
             throw new OutOfBoundException();
         }
 
-        byte[] sector = null;
-        int start = 0;
-        for (int i = 0; i < count; i++) {
-            byte[] each = this.data[i];
-            if (/*offset >= start && */offset < start + each.length) {
-                sector = each;
-                break;
-            }
-            start += each.length;
-        }
+        final int startIdx = calcStartIndex(offset);
+        final byte[] sector = this.data[startIdx];
         if (sector != null) {
+            int start = calculateStartPosition(startIdx);
             sector[offset - start] = data;
         }
     }
@@ -283,20 +271,41 @@ public class DynamicVirtualMemory implements VirtualMemory {
             return -1;
         }
 
-        byte[] sector = null;
-        int start = 0;
-        for (int i = 0; i < count; i++) {
-            final byte[] each = data[i];
-            if (/*offset >= start && */offset < start + each.length) {
-                sector = each;
-                break;
-            }
-            start += each.length;
-        }
+        final int startIdx = calcStartIndex(offset);
+        final byte[] sector = this.data[startIdx];
+
         if (sector != null) {
+            int start = calculateStartPosition(startIdx);
             return sector[offset - start];
         }
 
         return -1;
+    }
+
+    private int calcStartIndex(int offset) {
+        if (offset == 0) {
+            return 0;
+        }
+        final int len1 = data[0].length;
+        if (offset <= len1) {
+            return 0;
+        }
+        return (int) ((offset - len1) * oneGrowth) + 1;
+    }
+
+    private int calcEndIndex(int offset, int length) {
+        final int address = offset + length;
+        final int len1 = data[0].length;
+        if (address < len1) {
+            return 0;
+        }
+        return (int) ((address - len1) * oneGrowth) + 1;
+    }
+
+    private int calculateStartPosition(int startIdx) {
+        return (startIdx == 0
+                ? 0 : startIdx == 1
+                ? this.data[0].length
+                : this.data[0].length + (startIdx - 1) * growth);
     }
 }

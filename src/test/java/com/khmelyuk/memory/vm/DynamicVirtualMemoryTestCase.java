@@ -96,6 +96,46 @@ public class DynamicVirtualMemoryTestCase extends VirtualMemoryTestCase {
         Assert.assertEquals((byte) 112, memory.read(164));
     }
 
+    @Test
+    public void testPlayWithDVM() {
+        VirtualMemory memory = createVirtualMemory(140);
+        VirtualMemoryBlock block0 = memory.allocate(20);
+        VirtualMemoryBlock block1 = memory.allocate(200);
+        VirtualMemoryBlock block2 = memory.allocate(20);
+        VirtualMemoryBlock block3 = memory.allocate(120);
+        VirtualMemoryBlock block4 = memory.allocate(150);
+
+        byte[] data0 = generateData(20);
+        byte[] data1 = generateData(200);
+        byte[] data2 = generateData(20);
+        byte[] data3 = generateData(120);
+        byte[] data4 = generateData(150);
+
+        byte[] read0 = new byte[20];
+        byte[] read1 = new byte[200];
+        byte[] read2 = new byte[20];
+        byte[] read3 = new byte[120];
+        byte[] read4 = new byte[150];
+
+        block0.write(data0);
+        block1.write(data1);
+        block2.write(data2);
+        block3.write(data3);
+        block4.write(data4);
+
+        block0.read(read0);
+        block1.read(read1);
+        block2.read(read2);
+        block3.read(read3);
+        block4.read(read4);
+
+        Assert.assertArrayEquals(data0, read0);
+        Assert.assertArrayEquals(data1, read1);
+        Assert.assertArrayEquals(data2, read2);
+        Assert.assertArrayEquals(data3, read3);
+        Assert.assertArrayEquals(data4, read4);
+    }
+
     private byte[] generateData(int length) {
         byte[] array = new byte[length];
         for (int i = 0; i < length; i++) {
