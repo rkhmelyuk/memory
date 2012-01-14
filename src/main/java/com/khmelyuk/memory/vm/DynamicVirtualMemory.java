@@ -15,6 +15,8 @@ import java.io.OutputStream;
  */
 public class DynamicVirtualMemory implements VirtualMemory {
 
+    private static final int SECTORS_GROW_COUNT = 32;
+
     private byte[][] data;
     private int count;
 
@@ -27,9 +29,12 @@ public class DynamicVirtualMemory implements VirtualMemory {
 
     public DynamicVirtualMemory(int size, int maxSize, int growth, VirtualMemoryTable table) {
         growth = (growth != 0 ? growth : 1);
-        data = new byte[(maxSize - size) / growth + 1][];
-        data[0] = new byte[size];
-        count = 1;
+
+        int sectorsCount = (maxSize - size) / growth + 1;
+        sectorsCount = Math.min(sectorsCount, SECTORS_GROW_COUNT);
+        this.data = new byte[sectorsCount][];
+        this.data[0] = new byte[size];
+        this.count = 1;
 
         this.size = size;
         this.maxSize = maxSize;
@@ -75,6 +80,13 @@ public class DynamicVirtualMemory implements VirtualMemory {
     private void extendMemorySize() {
         int newSize = Math.min(size + growth, maxSize);
         if (table.increaseSize(newSize)) {
+            int length = data.length;
+            if (length == count) {
+                byte[][] newData = new byte[length + SECTORS_GROW_COUNT][];
+                System.arraycopy(data, 0, newData, 0, length);
+                data = newData;
+            }
+
             data[count++] = new byte[newSize - size];
             size = newSize;
         }

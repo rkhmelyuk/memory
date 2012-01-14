@@ -3,6 +3,7 @@ package com.khmelyuk.memory.vm;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.khmelyuk.memory.Memory;
 import com.khmelyuk.memory.OutOfMemoryException;
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 
@@ -83,6 +84,17 @@ public class DynamicVirtualMemoryTestCase extends VirtualMemoryTestCase {
         memory.read(read, 40, read.length);
 
         Assert.assertArrayEquals(data, read);
+    }
+
+    @Test
+    public void testAllocateManyElements() {
+        VirtualMemory memory = new DynamicVirtualMemory(
+                        100, 10 * Memory.MB, 100,
+                        new LinkedVirtualMemoryTable(100));
+
+        for (int i = 0; i < 1000; i++) {
+            Assert.assertNotNull(memory.allocate(60));
+        }
     }
 
     @Test
