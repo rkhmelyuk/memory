@@ -4,6 +4,7 @@ import com.khmelyuk.memory.OutOfBoundException;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Virtual memory table based on linked lists.
@@ -15,14 +16,14 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     private final LinkedList<TableBlock> used = new LinkedList<TableBlock>();
     private final LinkedList<TableBlock> free = new LinkedList<TableBlock>();
 
-    private int freeMemorySize = 0;
-    private int usedMemorySize = 0;
+    private AtomicInteger freeMemorySize;
+    private AtomicInteger usedMemorySize;
 
     public LinkedVirtualMemoryTable(int size) {
         free.add(new TableBlock(0, size));
 
-        freeMemorySize = size;
-        usedMemorySize = 0;
+        usedMemorySize = new AtomicInteger(0);
+        freeMemorySize = new AtomicInteger(size);
     }
 
     public List<TableBlock> getUsed() {
@@ -50,13 +51,13 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                 freeBlock.resize(
                         freeBlock.getAddress() + size,
                         freeBlock.getSize() - size
-                );
+                                );
             }
 
             insertBlock(used, result);
 
-            freeMemorySize -= size;
-            usedMemorySize += size;
+            freeMemorySize.addAndGet(-size);
+            usedMemorySize.addAndGet(size);
 
             return result;
         }
@@ -80,9 +81,9 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                         tableBlock.getAddress(),
                         tableBlock.getSize()));
 
-                int freeBlock = tableBlock.getSize();
-                freeMemorySize += freeBlock;
-                usedMemorySize -= freeBlock;
+                int size = tableBlock.getSize();
+                freeMemorySize.addAndGet(size);
+                usedMemorySize.addAndGet(-size);
 
                 tableBlock.resize(0, 0);
 
@@ -153,33 +154,35 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
 
     public int getFreeMemorySize() {
-        return freeMemorySize;
+        return freeMemorySize.get();
     }
 
     public int getUsedMemorySize() {
-        return usedMemorySize;
+        return usedMemorySize.get();
     }
 
     public void reset(int size) {
         used.clear();
         free.clear();
         free.add(new TableBlock(0, size));
-        freeMemorySize = 0;
-        usedMemorySize = 0;
+        freeMemorySize.set(0);
+        usedMemorySize.set(0);
     }
 
     @Override
     public boolean increaseSize(int size) {
-        final int totalSize = freeMemorySize + usedMemorySize;
+        final int freeSize = freeMemorySize.get();
+        final int usedSize = usedMemorySize.get();
+        final int totalSize = freeSize + usedSize;
 
-        if (size < usedMemorySize || size <= totalSize) {
+        if (size < usedSize || size <= totalSize) {
             return false;
         }
 
         // increase memory size
         int incSize = size - totalSize;
         addFreeBlock(new TableBlock(totalSize, incSize));
-        freeMemorySize += incSize;
+        freeMemorySize.addAndGet(incSize);
 
         return true;
     }
