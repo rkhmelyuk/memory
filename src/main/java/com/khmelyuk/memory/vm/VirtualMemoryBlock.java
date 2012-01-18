@@ -3,9 +3,14 @@ package com.khmelyuk.memory.vm;
 import com.khmelyuk.memory.OutOfBoundException;
 import com.khmelyuk.memory.ReadException;
 import com.khmelyuk.memory.WriteException;
+import com.khmelyuk.memory.concurrency.LockInputStream;
+import com.khmelyuk.memory.concurrency.LockOutputStream;
 import com.khmelyuk.memory.vm.table.Block;
 
 import java.io.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Represents a block of virtual memory.
@@ -15,6 +20,8 @@ import java.io.*;
 public class VirtualMemoryBlock {
 
     private static final int BUFFER_SIZE = 8192;
+
+    private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
     private final VirtualMemory vm;
     private final Block block;
@@ -37,48 +44,81 @@ public class VirtualMemoryBlock {
     }
 
     public InputStream getInputStream() {
-        return vm.getInputStream(block.getAddress(), block.getSize());
+        InputStream in = vm.getInputStream(block.getAddress(), block.getSize());
+        return new LockInputStream(in, rwLock.readLock());
     }
 
     public OutputStream getOutputStream() {
-        return vm.getOutputStream(block.getAddress(), block.getSize());
+        OutputStream out = vm.getOutputStream(block.getAddress(), block.getSize());
+        return new LockOutputStream(out, rwLock.writeLock());
     }
 
     public void write(byte[] data) throws OutOfBoundException {
-        final int length = data.length;
-        if (length > block.getSize()) {
-            throw new OutOfBoundException();
+        Lock lock = rwLock.writeLock();
+        try {
+            lock.lock();
+            final int length = data.length;
+            if (length > block.getSize()) {
+                throw new OutOfBoundException();
+            }
+            vm.write(data, block.getAddress(), length);
         }
-        vm.write(data, block.getAddress(), length);
+        finally {
+            lock.unlock();
+        }
     }
 
     public void write(byte[] data, int offset, int length) throws OutOfBoundException {
-        if (data.length < length) {
-            length = data.length;
+        Lock lock = rwLock.readLock();
+        try {
+            lock.lock();
+
+            if (data.length < length) {
+                length = data.length;
+            }
+            if (offset + length > block.getSize()) {
+                throw new OutOfBoundException();
+            }
+            vm.write(data, block.getAddress() + offset, length);
         }
-        if (offset + length > block.getSize()) {
-            throw new OutOfBoundException();
+        finally {
+            lock.unlock();
         }
-        vm.write(data, block.getAddress() + offset, length);
     }
 
     public int read(byte[] data) {
-        final int blockSize = block.getSize();
-        int length = data.length;
-        if (data.length > blockSize) {
-            length = blockSize;
+        Lock lock = rwLock.readLock();
+        try {
+            lock.lock();
+
+            final int blockSize = block.getSize();
+            int length = data.length;
+            if (data.length > blockSize) {
+                length = blockSize;
+            }
+            return vm.read(data, block.getAddress(), length);
         }
-        return vm.read(data, block.getAddress(), length);
+        finally {
+            lock.unlock();
+        }
     }
 
     public int read(byte[] data, int offset, int length) {
-        if (data.length < length) {
-            length = data.length;
+        Lock lock = rwLock.readLock();
+        try {
+            lock.lock();
+
+            if (data.length < length) {
+                length = data.length;
+            }
+            if (offset + length > block.getSize()) {
+                return -1;
+            }
+            return vm.read(data, block.getAddress() + offset, length);
         }
-        if (offset + length > block.getSize()) {
-            return -1;
+        finally {
+            lock.unlock();
         }
-        return vm.read(data, block.getAddress() + offset, length);
     }
 
     public String readString() {
@@ -91,37 +131,57 @@ public class VirtualMemoryBlock {
 
     public void writeObject(Object obj) throws OutOfBoundException, WriteException {
         try {
+            rwLock.readLock().lock();
+
             OutputStream out = vm.getOutputStream(block.getAddress(), block.getSize());
             new ObjectOutputStream(out).writeObject(obj);
         }
         catch (IOException e) {
             throw new WriteException("Error to read an object", e);
         }
+        finally {
+            rwLock.readLock().unlock();
+        }
     }
 
     public Object readObject() throws OutOfBoundException, ReadException {
-        InputStream in = vm.getInputStream(block.getAddress(), block.getSize());
+        Lock lock = rwLock.readLock();
         try {
-            return new ObjectInputStream(in).readObject();
+            lock.lock();
+
+            InputStream in = vm.getInputStream(block.getAddress(), block.getSize());
+            try {
+                return new ObjectInputStream(in).readObject();
+            }
+            catch (IOException e) {
+                throw new ReadException("Error to read an object", e);
+            }
+            catch (ClassNotFoundException e) {
+                throw new ReadException("Error to read an object", e);
+            }
         }
-        catch (IOException e) {
-            throw new ReadException("Error to read an object", e);
-        }
-        catch (ClassNotFoundException e) {
-            throw new ReadException("Error to read an object", e);
+        finally {
+            lock.unlock();
         }
     }
 
     public void dump(OutputStream out) throws IOException {
-        final int blockSize = block.getSize();
-        final int bufferSize = blockSize < BUFFER_SIZE ? blockSize : BUFFER_SIZE;
+        Lock lock = rwLock.readLock();
+        try {
+            lock.lock();
 
-        int length, offset = 0;
-        final byte[] buffer = new byte[bufferSize];
-        while ((length = read(buffer, offset, bufferSize)) != -1) {
-            out.write(buffer, 0, length);
-            offset += length;
+            final int blockSize = block.getSize();
+            final int bufferSize = blockSize < BUFFER_SIZE ? blockSize : BUFFER_SIZE;
+
+            int length, offset = 0;
+            final byte[] buffer = new byte[bufferSize];
+            while ((length = read(buffer, offset, bufferSize)) != -1) {
+                out.write(buffer, 0, length);
+                offset += length;
+            }
         }
-
+        finally {
+            lock.unlock();
+        }
     }
 }

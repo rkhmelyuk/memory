@@ -364,7 +364,7 @@ public class DynamicVirtualMemory implements VirtualMemory {
     private int calculateStartPosition(int index) {
         return (index == 0
                 ? 0 : index == 1
-                ? this.data[0].length
-                : this.data[0].length + (index - 1) * growth);
+                      ? this.data[0].length
+                      : this.data[0].length + (index - 1) * growth);
     }
 }
