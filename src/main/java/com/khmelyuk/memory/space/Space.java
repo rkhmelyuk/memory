@@ -3,6 +3,7 @@ package com.khmelyuk.memory.space;
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -37,6 +38,18 @@ public interface Space {
      * Frees this space.
      */
     void free();
+
+    /**
+     * Gets the space input stream.
+     * @return the input stream.
+     */
+    InputStream getInputStream();
+
+    /**
+     * Gets the space output stream.
+     * @return the output stream.
+     */
+    OutputStream getOutputStream();
 
     /**
      * Write the object to the space.
@@ -80,5 +93,11 @@ public interface Space {
      * @throws IOException error to dump content.
      */
     void dump(OutputStream out) throws IOException;
+
+    /**
+     * Gets the space that supports a transaction.
+     * @return the transactional space.
+     */
+    TransactionalSpace transactional();
 
 }

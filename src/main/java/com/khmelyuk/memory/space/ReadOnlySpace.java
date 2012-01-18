@@ -3,6 +3,7 @@ package com.khmelyuk.memory.space;
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -28,6 +29,16 @@ public class ReadOnlySpace implements Space {
 
     public void free() {
         space.free();
+    }
+
+    @Override
+    public InputStream getInputStream() {
+        return space.getInputStream();
+    }
+
+    @Override
+    public OutputStream getOutputStream() {
+        throw new WriteNotAllowedException();
     }
 
     public Object read() {
@@ -56,5 +67,9 @@ public class ReadOnlySpace implements Space {
 
     public void dump(OutputStream out) throws IOException {
         space.dump(out);
+    }
+
+    public TransactionalSpace transactional() {
+        return space.transactional();
     }
 }

@@ -1,9 +1,10 @@
 package com.khmelyuk.memory;
 
+import com.khmelyuk.memory.space.MemorySpace;
+import com.khmelyuk.memory.space.TransactionException;
+import com.khmelyuk.memory.space.TransactionalSpace;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.khmelyuk.memory.space.MemorySpace;
 
 /**
  * Test case for Memory class.
@@ -187,5 +188,116 @@ public class MemoryTestCase {
         Assert.assertEquals(0, space3.getAddress());
         Assert.assertEquals(10 * Memory.KB, memory.getFreeMemorySize());
         Assert.assertEquals(10 * Memory.KB, memory.getUsedMemorySize());
+    }
+
+    @Test
+    public void testTransaction() throws Exception {
+        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
+        Memory memory = allocator.allocate(20 * Memory.KB);
+        MemorySpace space = memory.allocate(5 * Memory.KB);
+
+        space.write("Hello");
+        Assert.assertEquals("Hello", space.readString());
+
+        TransactionalSpace transactional = space.transactional();
+        Assert.assertEquals("Hello", transactional.readString());
+
+        space.write("Hello2");
+        Assert.assertEquals("Hello2", space.readString());
+        Assert.assertEquals("Hello2", transactional.readString());
+
+        transactional.start();
+
+        space.write("Hello3");
+        Assert.assertEquals("Hello3", space.readString());
+        Assert.assertEquals("Hello2", transactional.readString());
+
+        transactional.write("Hi world!");
+
+        Assert.assertEquals("Hello3", space.readString());
+        Assert.assertEquals("Hi world!", transactional.readString());
+
+        transactional.commit();
+
+        Assert.assertEquals("Hi world!", space.readString());
+        Assert.assertEquals("Hi world!", transactional.readString());
+    }
+
+    @Test(expected = TransactionException.class)
+    public void testNestedTransaction() throws Exception {
+        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
+        Memory memory = allocator.allocate(20 * Memory.KB);
+        MemorySpace space = memory.allocate(5 * Memory.KB);
+
+        space.write("Hello");
+        Assert.assertEquals("Hello", space.readString());
+
+        TransactionalSpace transactional = space.transactional();
+        Assert.assertEquals("Hello", transactional.readString());
+
+        space.write("Hello2");
+        Assert.assertEquals("Hello2", space.readString());
+        Assert.assertEquals("Hello2", transactional.readString());
+
+        transactional.start();
+        transactional.start();
+    }
+
+    @Test
+    public void testRollbackTransaction() throws Exception {
+        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
+        Memory memory = allocator.allocate(20 * Memory.KB);
+        MemorySpace space = memory.allocate(5 * Memory.KB);
+
+        space.write("Hello");
+        Assert.assertEquals("Hello", space.readString());
+
+        TransactionalSpace transactional = space.transactional();
+        Assert.assertEquals("Hello", transactional.readString());
+
+        space.write("Hello2");
+        Assert.assertEquals("Hello2", space.readString());
+        Assert.assertEquals("Hello2", transactional.readString());
+
+        transactional.start();
+
+        space.write("Hello3");
+        Assert.assertEquals("Hello3", space.readString());
+        Assert.assertEquals("Hello2", transactional.readString());
+
+        transactional.write("Hi world!");
+
+        Assert.assertEquals("Hello3", space.readString());
+        Assert.assertEquals("Hi world!", transactional.readString());
+
+        transactional.rollback();
+
+        Assert.assertEquals("Hello3", space.readString());
+        Assert.assertEquals("Hello3", transactional.readString());
+    }
+
+    @Test
+    public void testMultiTransaction() throws Exception {
+        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
+        Memory memory = allocator.allocate(20 * Memory.KB);
+        MemorySpace space = memory.allocate(5 * Memory.KB);
+
+        space.write("Hello");
+        Assert.assertEquals("Hello", space.readString());
+
+        TransactionalSpace transactional1 = space.transactional();
+        TransactionalSpace transactional2 = space.transactional();
+
+        transactional1.start();
+        transactional2.start();
+
+        transactional1.write("Hi world!");
+        transactional2.write("Hi world of foo!");
+
+        transactional1.commit();
+        Assert.assertEquals("Hi world!", space.readString());
+
+        transactional2.commit();
+        Assert.assertEquals("Hi world of foo!", space.readString());
     }
 }
