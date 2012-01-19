@@ -15,14 +15,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Ruslan Khmelyuk
  */
-public class TransactionalSpaceImpl implements TransactionalSpace {
+public class CopyTransactionalSpace implements TransactionalSpace {
 
     private final MemorySpace space;
     private final AtomicBoolean inTransaction;
     private Space tSpace;
     private Space currentSpace;
 
-    public TransactionalSpaceImpl(MemorySpace space) {
+    public CopyTransactionalSpace(MemorySpace space) {
         this.space = space;
         this.tSpace = null;
         this.currentSpace = space;
