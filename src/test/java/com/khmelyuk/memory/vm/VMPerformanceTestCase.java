@@ -18,7 +18,7 @@ public class VMPerformanceTestCase {
     static final int SIZE = 2 * Memory.MB;
     static final int COUNT_COEFF = 2000;
 
-    @Test
+   /* @Test
     public void testFixed2VMPerformance() {
         testPerformance(createFixed2VirtualMemory(), 0);
         long total = 0;
@@ -27,7 +27,7 @@ public class VMPerformanceTestCase {
         }
 
         System.out.println("F2VM: Avg. duration " + (total / N) + "ms");
-    }
+    }*/
 
     @Test
     public void testFixed21VMPerformance() {
