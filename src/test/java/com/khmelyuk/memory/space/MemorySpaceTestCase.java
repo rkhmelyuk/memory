@@ -4,7 +4,6 @@ import com.khmelyuk.memory.FixedMemoryAllocator;
 import com.khmelyuk.memory.Memory;
 import com.khmelyuk.memory.space.transactional.CopyTransactionalSpace;
 import com.khmelyuk.memory.space.transactional.TransactionalSpace;
-import com.khmelyuk.memory.space.transactional.WriteNotAllowedException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -70,30 +69,6 @@ public class MemorySpaceTestCase {
     }
 
     @Test
-    public void testReadOnly() {
-        Space s = memory.allocate(2 * Memory.KB);
-        Space ro = s.readOnly();
-
-        Assert.assertNotNull(ro);
-    }
-
-    @Test(expected = WriteNotAllowedException.class)
-    public void testReadOnly_WriteStringFails() {
-        Space s = memory.allocate(2 * Memory.KB);
-        Space ro = s.readOnly();
-
-        ro.write("Hello");
-    }
-
-    @Test(expected = WriteNotAllowedException.class)
-    public void testReadOnly_WriteObjectFails() {
-        Space s = memory.allocate(2 * Memory.KB);
-        Space ro = s.readOnly();
-
-        ro.write(new User());
-    }
-
-    @Test
     public void testTransactional() {
         Space s = memory.allocate(2 * Memory.KB);
         TransactionalSpace ts = s.transactional();
@@ -101,7 +76,6 @@ public class MemorySpaceTestCase {
         Assert.assertNotNull(ts);
         Assert.assertTrue(ts instanceof CopyTransactionalSpace);
     }
-
 
     public static class User implements Serializable {
         String firstName;

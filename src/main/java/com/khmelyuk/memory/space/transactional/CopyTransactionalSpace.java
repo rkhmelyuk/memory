@@ -8,7 +8,7 @@ import com.khmelyuk.memory.vm.VirtualMemoryBlock;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A transactional space.
@@ -17,8 +17,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class CopyTransactionalSpace implements TransactionalSpace {
 
+    private static final int STATUS_NONE = 0;
+    private static final int STATUS_STARTING = 1;
+    private static final int STATUS_STARTED = 2;
+    private static final int STATUS_ENDING = 3;
+
     private final MemorySpace space;
-    private final AtomicBoolean inTransaction;
+    private final AtomicInteger status;
     private Space tSpace;
     private Space currentSpace;
 
@@ -26,7 +31,7 @@ public class CopyTransactionalSpace implements TransactionalSpace {
         this.space = space;
         this.tSpace = null;
         this.currentSpace = space;
-        this.inTransaction = new AtomicBoolean(false);
+        this.status = new AtomicInteger(STATUS_NONE);
     }
 
     @Override
@@ -102,28 +107,27 @@ public class CopyTransactionalSpace implements TransactionalSpace {
     }
 
     public void start() throws TransactionException {
-        try {
-            if (!inTransaction.compareAndSet(false, true)) {
-                throw new TransactionException("Space is in transaction already. Only one transaction is supported");
-            }
+        if (!status.compareAndSet(STATUS_NONE, STATUS_STARTING)) {
+            throw new TransactionException("Space is in transaction already. Only one transaction is supported");
+        }
 
+        try {
             tSpace = space.copy();
             currentSpace = tSpace;
-        }
-        catch (TransactionException e) {
-            throw e;
+            status.set(STATUS_STARTED);
         }
         catch (Exception e) {
             if (tSpace != null) {
                 tSpace.free();
                 currentSpace = space;
+                status.set(STATUS_NONE);
             }
             throw new TransactionException("Error to start a transaction", e);
         }
     }
 
     public void commit() throws TransactionException {
-        if (!inTransaction.get()) {
+        if (!status.compareAndSet(STATUS_STARTED, STATUS_ENDING)) {
             throw new TransactionException("Not in transaction currently.");
         }
 
@@ -132,21 +136,23 @@ public class CopyTransactionalSpace implements TransactionalSpace {
             tSpace.free();
             tSpace = null;
             currentSpace = space;
-            inTransaction.set(true);
+            status.set(STATUS_NONE);
         }
         catch (IOException e) {
-            throw new TransactionException("Error to commit a transaction.", e);
+            status.set(STATUS_STARTED);
+            throw new TransactionException("Error to commit a transaction. Transaction is rolled back.", e);
         }
     }
 
     public void rollback() throws TransactionException {
-        if (!inTransaction.get()) {
+        if (!status.compareAndSet(STATUS_STARTED, STATUS_ENDING)) {
             throw new TransactionException("Not in transaction currently.");
         }
 
+        currentSpace = space;
         tSpace.free();
         tSpace = null;
-        currentSpace = space;
-        inTransaction.set(false);
+
+        status.set(STATUS_NONE);
     }
 }
