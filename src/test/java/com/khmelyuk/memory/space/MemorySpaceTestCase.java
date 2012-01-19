@@ -2,8 +2,8 @@ package com.khmelyuk.memory.space;
 
 import com.khmelyuk.memory.FixedMemoryAllocator;
 import com.khmelyuk.memory.Memory;
+import com.khmelyuk.memory.space.transactional.CopyTransactionalSpace;
 import com.khmelyuk.memory.space.transactional.TransactionalSpace;
-import com.khmelyuk.memory.space.transactional.TransactionalSpaceImpl;
 import com.khmelyuk.memory.space.transactional.WriteNotAllowedException;
 import org.junit.After;
 import org.junit.Assert;
@@ -99,7 +99,7 @@ public class MemorySpaceTestCase {
         TransactionalSpace ts = s.transactional();
         
         Assert.assertNotNull(ts);
-        Assert.assertTrue(ts instanceof TransactionalSpaceImpl);
+        Assert.assertTrue(ts instanceof CopyTransactionalSpace);
     }
 
 

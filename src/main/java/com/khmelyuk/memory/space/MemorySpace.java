@@ -2,8 +2,8 @@ package com.khmelyuk.memory.space;
 
 import com.khmelyuk.memory.Memory;
 import com.khmelyuk.memory.MemoryException;
+import com.khmelyuk.memory.space.transactional.CopyTransactionalSpace;
 import com.khmelyuk.memory.space.transactional.TransactionalSpace;
-import com.khmelyuk.memory.space.transactional.TransactionalSpaceImpl;
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
 
 import java.io.IOException;
@@ -83,7 +83,7 @@ public class MemorySpace implements Space {
     }
 
     public TransactionalSpace transactional() {
-        return new TransactionalSpaceImpl(this);
+        return new CopyTransactionalSpace(this);
     }
 
     public Space copy() {
