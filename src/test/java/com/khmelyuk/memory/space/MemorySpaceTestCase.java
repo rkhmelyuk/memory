@@ -1,12 +1,14 @@
 package com.khmelyuk.memory.space;
 
+import com.khmelyuk.memory.FixedMemoryAllocator;
+import com.khmelyuk.memory.Memory;
+import com.khmelyuk.memory.space.transactional.TransactionalSpace;
+import com.khmelyuk.memory.space.transactional.TransactionalSpaceImpl;
+import com.khmelyuk.memory.space.transactional.WriteNotAllowedException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.khmelyuk.memory.FixedMemoryAllocator;
-import com.khmelyuk.memory.Memory;
 
 import java.io.Serializable;
 
@@ -90,6 +92,16 @@ public class MemorySpaceTestCase {
 
         ro.write(new User());
     }
+
+    @Test
+    public void testTransactional() {
+        Space s = memory.allocate(2 * Memory.KB);
+        TransactionalSpace ts = s.transactional();
+        
+        Assert.assertNotNull(ts);
+        Assert.assertTrue(ts instanceof TransactionalSpaceImpl);
+    }
+
 
     public static class User implements Serializable {
         String firstName;

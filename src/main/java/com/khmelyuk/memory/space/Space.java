@@ -1,5 +1,7 @@
 package com.khmelyuk.memory.space;
 
+import com.khmelyuk.memory.MemoryException;
+import com.khmelyuk.memory.space.transactional.TransactionalSpace;
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
 
 import java.io.IOException;
@@ -41,12 +43,14 @@ public interface Space {
 
     /**
      * Gets the space input stream.
+     *
      * @return the input stream.
      */
     InputStream getInputStream();
 
     /**
      * Gets the space output stream.
+     *
      * @return the output stream.
      */
     OutputStream getOutputStream();
@@ -95,7 +99,16 @@ public interface Space {
     void dump(OutputStream out) throws IOException;
 
     /**
+     * Returns a copy of this space.
+     *
+     * @return the copy of the space.
+     * @throws MemoryException error to allocate or copy the memory space.
+     */
+    Space copy() throws MemoryException;
+
+    /**
      * Gets the space that supports a transaction.
+     *
      * @return the transactional space.
      */
     TransactionalSpace transactional();

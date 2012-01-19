@@ -1,4 +1,4 @@
-package com.khmelyuk.memory.space;
+package com.khmelyuk.memory.space.transactional;
 
 /**
  * Error to start or commit a transaction.

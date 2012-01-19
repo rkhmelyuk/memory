@@ -2,6 +2,8 @@ package com.khmelyuk.memory.space;
 
 import com.khmelyuk.memory.Memory;
 import com.khmelyuk.memory.MemoryException;
+import com.khmelyuk.memory.space.transactional.TransactionalSpace;
+import com.khmelyuk.memory.space.transactional.TransactionalSpaceImpl;
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
 
 import java.io.IOException;
@@ -81,16 +83,21 @@ public class MemorySpace implements Space {
     }
 
     public TransactionalSpace transactional() {
-        return new TransactionalSpace(this);
+        return new TransactionalSpaceImpl(this);
     }
 
-    MemorySpace copy() {
+    public Space copy() {
+        MemorySpace space = null;
         try {
-            MemorySpace space = memory.allocate(size());
+            space = memory.allocate(size());
             dump(space.getOutputStream());
             return space;
         }
         catch (IOException e) {
+            // failed to copy, so free a space
+            space.free();
+
+            // throw appropriate exception
             throw new MemoryException("Error to copy a memory space.");
         }
     }

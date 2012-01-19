@@ -1,5 +1,8 @@
 package com.khmelyuk.memory.space;
 
+import com.khmelyuk.memory.MemoryException;
+import com.khmelyuk.memory.space.transactional.TransactionalSpace;
+import com.khmelyuk.memory.space.transactional.WriteNotAllowedException;
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
 
 import java.io.IOException;
@@ -67,6 +70,11 @@ public class ReadOnlySpace implements Space {
 
     public void dump(OutputStream out) throws IOException {
         space.dump(out);
+    }
+
+    @Override
+    public Space copy() throws MemoryException {
+        return space.copy();
     }
 
     public TransactionalSpace transactional() {

@@ -1,9 +1,9 @@
 package com.khmelyuk.memory.vm;
 
-import org.junit.Test;
-
 import com.khmelyuk.memory.Memory;
+import com.khmelyuk.memory.vm.storage.ByteBufferStorage;
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
+import org.junit.Test;
 
 import java.nio.ByteBuffer;
 
@@ -14,9 +14,31 @@ import java.nio.ByteBuffer;
  */
 public class VMPerformanceTestCase {
 
-    static final int N = 5;
-    static final int SIZE = 10 * Memory.MB;
+    static final int N = 1;
+    static final int SIZE = 2 * Memory.MB;
     static final int COUNT_COEFF = 2000;
+
+    @Test
+    public void testFixed2VMPerformance() {
+        testPerformance(createFixed2VirtualMemory(), 0);
+        long total = 0;
+        for (int i = 0; i < N; i++) {
+            total += testPerformance(createFixed2VirtualMemory(), i);
+        }
+
+        System.out.println("F2VM: Avg. duration " + (total / N) + "ms");
+    }
+
+    @Test
+    public void testFixed21VMPerformance() {
+        testPerformance(createFixed2VirtualMemory(), 0);
+        long total = 0;
+        for (int i = 0; i < N; i++) {
+            total += testPerformance(createFixed2VirtualMemory(), i);
+        }
+
+        System.out.println("F21VM: Avg. duration " + (total / N) + "ms");
+    }
 
     @Test
     public void testFixedVMPerformance() {
@@ -33,34 +55,23 @@ public class VMPerformanceTestCase {
     public void testDynamicVMPerformance() {
         testPerformance(createDynamicVirtualMemory(), 0);
         long total = 0;
-        long avgRead = 0;
-        long avgWrite = 0;
-        long avgAllocation = 0;
         for (int i = 0; i < N; i++) {
             DynamicVirtualMemory vm = createDynamicVirtualMemory();
             total += testPerformance(vm, i);
-
-            avgWrite += vm.avgWrite;
-            avgRead += vm.avgRead;
-            avgAllocation += vm.avgAllocation;
         }
-
-        System.out.println("avg write " + (avgWrite / N) + "ns");
-        System.out.println("avg read " + (avgRead / N) + "ns");
-        System.out.println("avg alloc " + (avgAllocation / N) + "ns");
 
         System.out.println("DVM: Avg. duration " + (total / N) + "ms");
     }
 
     @Test
     public void testByteBufferVMPerformance() {
-        testPerformance(createByteBufferVirtualMemory(), 0);
-        long total = 0;
+        long total = testPerformance(createByteBufferVirtualMemory(), 0);
+        /*long total = 0;
         for (int i = 0; i < N; i++) {
             total += testPerformance(createByteBufferVirtualMemory(), i);
-        }
+        }*/
 
-        System.out.println("BBVM: Avg. duration " + (total / N) + "ms");
+        System.out.println("BBVM: Avg. duration " + (total / 1) + "ms");
     }
 
     private long testPerformance(VirtualMemory vm, int n) {
@@ -77,7 +88,12 @@ public class VMPerformanceTestCase {
                 vm.free(block);
             }
         }
-        return (System.currentTimeMillis() - begin);
+        try {
+            return (System.currentTimeMillis() - begin);
+        }
+        finally {
+            System.gc();
+        }
     }
 
     private void write(VirtualMemoryBlock block) {
@@ -96,8 +112,13 @@ public class VMPerformanceTestCase {
                 new LinkedVirtualMemoryTable(SIZE));
     }
 
+    private static VirtualMemory createFixed2VirtualMemory() {
+        return new Fixed2VirtualMemory(new ByteBufferStorage(ByteBuffer.allocate(SIZE)),
+                new LinkedVirtualMemoryTable(SIZE));
+    }
+
     private static DynamicVirtualMemory createDynamicVirtualMemory() {
-        int size = SIZE / 10;
+        int size = SIZE / 1000;
         return new DynamicVirtualMemory(size, SIZE, size,
                 new LinkedVirtualMemoryTable(size));
     }

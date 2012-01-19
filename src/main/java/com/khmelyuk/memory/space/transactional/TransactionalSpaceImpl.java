@@ -1,5 +1,8 @@
-package com.khmelyuk.memory.space;
+package com.khmelyuk.memory.space.transactional;
 
+import com.khmelyuk.memory.MemoryException;
+import com.khmelyuk.memory.space.MemorySpace;
+import com.khmelyuk.memory.space.Space;
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
 
 import java.io.IOException;
@@ -12,14 +15,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Ruslan Khmelyuk
  */
-public class TransactionalSpace implements Space {
+public class TransactionalSpaceImpl implements TransactionalSpace {
 
     private final MemorySpace space;
     private final AtomicBoolean inTransaction;
-    private MemorySpace tSpace;
-    private MemorySpace currentSpace;
+    private Space tSpace;
+    private Space currentSpace;
 
-    public TransactionalSpace(MemorySpace space) {
+    public TransactionalSpaceImpl(MemorySpace space) {
         this.space = space;
         this.tSpace = null;
         this.currentSpace = space;
@@ -89,6 +92,11 @@ public class TransactionalSpace implements Space {
     }
 
     @Override
+    public Space copy() throws MemoryException {
+        return currentSpace.copy();
+    }
+
+    @Override
     public TransactionalSpace transactional() {
         return space.transactional();
     }
@@ -115,26 +123,30 @@ public class TransactionalSpace implements Space {
     }
 
     public void commit() throws TransactionException {
+        if (!inTransaction.get()) {
+            throw new TransactionException("Not in transaction currently.");
+        }
+
         try {
-            if (inTransaction.get()) {
-                tSpace.dump(space.getOutputStream());
-                tSpace.free();
-                tSpace = null;
-                currentSpace = space;
-                inTransaction.set(true);
-            }
+            tSpace.dump(space.getOutputStream());
+            tSpace.free();
+            tSpace = null;
+            currentSpace = space;
+            inTransaction.set(true);
         }
         catch (IOException e) {
             throw new TransactionException("Error to commit a transaction.", e);
         }
     }
 
-    public void rollback() {
-        if (inTransaction.get()) {
-            tSpace.free();
-            tSpace = null;
-            currentSpace = space;
-            inTransaction.set(false);
+    public void rollback() throws TransactionException {
+        if (!inTransaction.get()) {
+            throw new TransactionException("Not in transaction currently.");
         }
+
+        tSpace.free();
+        tSpace = null;
+        currentSpace = space;
+        inTransaction.set(false);
     }
 }

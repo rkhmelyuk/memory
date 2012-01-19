@@ -1,4 +1,4 @@
-package com.khmelyuk.memory.space;
+package com.khmelyuk.memory.space.transactional;
 
 import com.khmelyuk.memory.MemoryException;
 
