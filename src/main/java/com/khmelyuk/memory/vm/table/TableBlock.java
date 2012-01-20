@@ -1,5 +1,7 @@
 package com.khmelyuk.memory.vm.table;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * The block of memory.
  *
@@ -9,6 +11,7 @@ final class TableBlock implements Block, Comparable<TableBlock> {
 
     private int size;
     private int address;
+    private AtomicBoolean lock = new AtomicBoolean(false);
 
     public TableBlock(int address, int size) {
         this.address = address;
@@ -31,6 +34,10 @@ final class TableBlock implements Block, Comparable<TableBlock> {
         this.size = length;
     }
 
+    public int getEnd() {
+        return address + size;
+    }
+
     public void resize(int address, int length) {
         this.address = address;
         this.size = length;
@@ -39,6 +46,14 @@ final class TableBlock implements Block, Comparable<TableBlock> {
     @Override
     public int hashCode() {
         return (size * 31 + address);
+    }
+
+    public boolean lock() {
+        return lock.compareAndSet(false, true);
+    }
+
+    public void unlock() {
+        lock.set(false);
     }
 
     @Override
