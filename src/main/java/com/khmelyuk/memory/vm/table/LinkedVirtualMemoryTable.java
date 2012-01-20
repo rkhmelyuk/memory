@@ -2,9 +2,12 @@ package com.khmelyuk.memory.vm.table;
 
 import com.khmelyuk.memory.OutOfBoundException;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Virtual memory table based on linked lists.
@@ -13,24 +16,29 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
+    private final ReadWriteLock usedLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock freeLock = new ReentrantReadWriteLock();
+
     private final LinkedList<TableBlock> used = new LinkedList<TableBlock>();
     private final LinkedList<TableBlock> free = new LinkedList<TableBlock>();
 
+    private TableBlock nextBlock;
     private AtomicInteger freeMemorySize;
     private AtomicInteger usedMemorySize;
 
     public LinkedVirtualMemoryTable(int size) {
-        free.add(new TableBlock(0, size));
+        nextBlock = new TableBlock(0, size);
+        free.add(nextBlock);
 
         usedMemorySize = new AtomicInteger(0);
         freeMemorySize = new AtomicInteger(size);
     }
 
-    public List<TableBlock> getUsed() {
+    public Collection<TableBlock> getUsed() {
         return used;
     }
 
-    public List<TableBlock> getFree() {
+    public Collection<TableBlock> getFree() {
         return free;
     }
 
@@ -44,20 +52,23 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             final TableBlock result;
             if (freeBlock.getSize() == size) {
                 result = freeBlock;
-                free.remove(freeBlock);
+                removeBlock(free, freeBlock, freeLock);
             }
             else {
                 result = new TableBlock(freeBlock.getAddress(), size);
                 freeBlock.resize(
                         freeBlock.getAddress() + size,
-                        freeBlock.getSize() - size
-                                );
+                        freeBlock.getSize() - size);
+
+                //nextBlock = freeBlock;
             }
 
-            insertBlock(used, result);
+            insertBlock(used, result, usedLock);
 
-            freeMemorySize.addAndGet(-size);
+            freeBlock.unlock();
+
             usedMemorySize.addAndGet(size);
+            freeMemorySize.addAndGet(-size);
 
             return result;
         }
@@ -65,18 +76,35 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     }
 
     protected TableBlock getBlockToAllocate(int size) {
-        for (TableBlock each : free) {
-            if (each.getSize() >= size) {
-                return each;
+        /*if (nextBlock.lock()) {
+            if (nextBlock.getSize() <= size) {
+                return nextBlock;
             }
         }
-        return null;
+        */
+
+        try {
+            freeLock.readLock().lock();
+
+            for (TableBlock each : free) {
+                if (each != null && each.getSize() >= size && each.lock()) {
+                    if (each.getSize() >= size) {
+                        return each;
+                    }
+                    each.unlock();
+                }
+            }
+            return null;
+        }
+        finally {
+            freeLock.readLock().unlock();
+        }
     }
 
     public boolean free(Block block) {
-        TableBlock tableBlock = getSimilarBlock(used, block);
+        TableBlock tableBlock = getSimilarBlock(used, block, usedLock);
         if (tableBlock != null) {
-            if (used.remove(tableBlock)) {
+            if (removeBlock(used, tableBlock, usedLock)) {
                 addFreeBlock(new TableBlock(
                         tableBlock.getAddress(),
                         tableBlock.getSize()));
@@ -86,6 +114,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                 usedMemorySize.addAndGet(-size);
 
                 tableBlock.resize(0, 0);
+                tableBlock.unlock();
 
                 return true;
             }
@@ -100,7 +129,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
      */
     protected void addFreeBlock(TableBlock block) {
         if (!extendFreeMemory(block)) {
-            insertBlock(free, block);
+            insertBlock(free, block, freeLock);
         }
     }
 
@@ -113,20 +142,37 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
      */
     protected boolean extendFreeMemory(TableBlock block) {
         final int blockAddress = block.getAddress();
-        final int end = blockAddress + block.getSize();
+        final int blockEnd = block.getEnd();
 
         TableBlock head = null;
         TableBlock tail = null;
-        for (TableBlock each : free) {
-            if (head == null && each.getAddress() == end) {
-                head = each;
+        try {
+            freeLock.readLock().lock();
+
+            for (TableBlock each : free) {
+                if (head == null && each.getAddress() == blockEnd && each.lock()) {
+                    if (each.getAddress() != blockEnd) {
+                        each.unlock();
+                    }
+                    else {
+                        head = each;
+                    }
+                }
+                else if (tail == null && each.getEnd() == blockAddress && each.lock()) {
+                    if (each.getEnd() != blockAddress) {
+                        each.unlock();
+                    }
+                    else {
+                        tail = each;
+                    }
+                }
+                if (head != null && tail != null) {
+                    break;
+                }
             }
-            else if (tail == null && each.getAddress() + each.getSize() == blockAddress) {
-                tail = each;
-            }
-            if (head != null && tail != null) {
-                break;
-            }
+        }
+        finally {
+            freeLock.readLock().unlock();
         }
 
         // if there is a head or tail - then resize and return true
@@ -138,20 +184,24 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             else {
                 // head is found, so we just resize tail and remove head
                 tail.setSize(block.getSize() + tail.getSize() + head.getSize());
-                free.remove(head);
+                removeBlock(free, head, freeLock);
+
+                head.unlock();
             }
+
+            tail.unlock();
 
             return true;
         }
         else if (head != null) {
             head.resize(blockAddress, block.getSize() + head.getSize());
+            head.unlock();
 
             return true;
         }
 
         return false;
     }
-
 
     public int getFreeMemorySize() {
         return freeMemorySize.get();
@@ -162,11 +212,27 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     }
 
     public void reset(int size) {
-        used.clear();
-        free.clear();
-        free.add(new TableBlock(0, size));
-        freeMemorySize.set(0);
-        usedMemorySize.set(0);
+        try {
+            usedLock.writeLock().lock();
+            used.clear();
+            usedMemorySize.set(0);
+        }
+        finally {
+            usedLock.writeLock().unlock();
+        }
+
+        try {
+            freeLock.writeLock().lock();
+            free.clear();
+            nextBlock.unlock();
+            nextBlock = new TableBlock(0, size);
+            free.add(nextBlock);
+            freeMemorySize.set(0);
+        }
+        finally {
+            freeLock.writeLock().unlock();
+        }
+
     }
 
     @Override
@@ -192,18 +258,46 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
      *
      * @param list  the list to find a similar block in.
      * @param block the block to find similar to it.
+     * @param lock  the lock to avoid concurrency issues.
      * @return the found similar block or null.
      */
-    protected static TableBlock getSimilarBlock(List<TableBlock> list, Block block) {
-        for (TableBlock each : list) {
-            if (each.equals(block)) {
-                return each;
+    private static TableBlock getSimilarBlock(List<TableBlock> list, Block block, ReadWriteLock lock) {
+        try {
+            lock.readLock().lock();
+            for (TableBlock each : list) {
+                if (each.equals(block) && each.lock()) {
+                    if (!each.equals(block)) {
+                        each.unlock();
+                    }
+                    return each;
+                }
             }
+            return null;
         }
-        return null;
+        finally {
+            lock.readLock().unlock();
+        }
     }
 
-    private static void insertBlock(List<TableBlock> list, TableBlock block) {
-        list.add(0, block);
+    // TODO - list of modifications if tryLock() returns false.
+
+    private static void insertBlock(LinkedList<TableBlock> table, TableBlock block, ReadWriteLock lock) {
+        try {
+            lock.writeLock().lock();
+            table.addFirst(block);
+        }
+        finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    private static boolean removeBlock(List<TableBlock> table, TableBlock block, ReadWriteLock lock) {
+        try {
+            lock.writeLock().lock();
+            return table.remove(block);
+        }
+        finally {
+            lock.writeLock().unlock();
+        }
     }
 }

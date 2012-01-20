@@ -3,7 +3,9 @@ package com.khmelyuk.memory;
 import com.khmelyuk.memory.vm.FixedVirtualMemory;
 import com.khmelyuk.memory.vm.VirtualMemory;
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
+import com.khmelyuk.memory.vm.table.Block;
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
+import com.khmelyuk.memory.vm.table.VirtualMemoryTable;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,7 +38,7 @@ public class ConcurrencyTestCase {
         memory.free();
     }
 
-    @Test(timeout = 6000)
+    @Test(timeout = 3000)
     public void testVMBlockReadWrite() throws Exception {
         final VirtualMemory vm = createVirtualMemory();
         final VirtualMemoryBlock block = vm.allocate(100);
@@ -44,12 +46,31 @@ public class ConcurrencyTestCase {
         int count = 20;
         List<Thread> threads = new ArrayList<Thread>(count);
         for (int i = 0; i < count; i++) {
-            Thread thread = new FillMemory(block, i);
+            Thread thread = new TestBlockReadWrite(block, i);
             threads.add(thread);
             thread.start();
         }
 
-        Thread.sleep(5000);
+        Thread.sleep(2000);
+
+        for (Thread each : threads) {
+            each.interrupt();
+        }
+    }
+
+    @Test(timeout = 3000)
+    public void testVMTable() throws Exception {
+        VirtualMemoryTable table = new LinkedVirtualMemoryTable(1000);
+
+        int count = 20;
+        List<Thread> threads = new ArrayList<Thread>(count);
+        for (int i = 0; i < count; i++) {
+            Thread thread = new TestTableAllocationFree(table, i);
+            threads.add(thread);
+            thread.start();
+        }
+
+        Thread.sleep(2000);
 
         for (Thread each : threads) {
             each.interrupt();
@@ -61,12 +82,12 @@ public class ConcurrencyTestCase {
                 new LinkedVirtualMemoryTable(SIZE));
     }
 
-    private static class FillMemory extends Thread {
+    private static class TestBlockReadWrite extends Thread {
 
         private VirtualMemoryBlock block;
         private int value;
 
-        public FillMemory(VirtualMemoryBlock block, int value) {
+        public TestBlockReadWrite(VirtualMemoryBlock block, int value) {
             this.block = block;
             this.value = value;
         }
@@ -80,7 +101,7 @@ public class ConcurrencyTestCase {
                 data[i] = (byte) value;
             }
             byte[] buff = new byte[size];
-            while(!isInterrupted()) {
+            while (!isInterrupted()) {
                 block.write(data);
 
                 // test read lock works correctly - we read exactly as it's when start reading.
@@ -100,6 +121,33 @@ public class ConcurrencyTestCase {
                 }
                 catch (IOException e) {
                     e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private static class TestTableAllocationFree extends Thread {
+
+        private VirtualMemoryTable table;
+        private int value;
+
+        public TestTableAllocationFree(VirtualMemoryTable table, int value) {
+            this.table = table;
+            this.value = value;
+        }
+
+        @Override
+        public void run() {
+            Block freeBlock = null;
+            while(!isInterrupted()) {
+                Block block = table.allocate((int) (Math.random() * 30) + 10);
+                if (freeBlock != null) {
+                    table.free(freeBlock);
+                    freeBlock = null;
+                }
+                if (block != null) {
+                    // lets test it is not used yet
+                    freeBlock = block;
                 }
             }
         }
