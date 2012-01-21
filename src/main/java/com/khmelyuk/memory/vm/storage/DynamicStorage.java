@@ -17,20 +17,33 @@ public class DynamicStorage implements Storage {
     private int size;
 
     private final int growth;
+    private final int maxSize;
     private final float oneGrowth;
+    private final StorageFactory storageFactory;
 
-    public DynamicStorage(int size, int maxSize, int growth) {
+    public DynamicStorage(int size, int maxSize, int growth, StorageFactory storageFactory) {
         growth = (growth != 0 ? growth : 1);
 
         int sectorsCount = (maxSize - size) / growth + 1;
         sectorsCount = Math.min(sectorsCount, SECTORS_GROW_COUNT);
         this.data = new Storage[sectorsCount];
-        this.data[0] = new ByteArrayStorage(size);
+        this.data[0] = storageFactory.create(0, size);
         this.count = 1;
 
         this.size = size;
         this.growth = growth;
+        this.maxSize = maxSize;
         this.oneGrowth = 1f / growth;
+
+        this.storageFactory = storageFactory;
+    }
+
+    public int getGrowth() {
+        return growth;
+    }
+
+    public int getMaxSize() {
+        return maxSize;
     }
 
     @Override
@@ -64,7 +77,7 @@ public class DynamicStorage implements Storage {
         }
 
         // allocate the new memory sector
-        data[count++] = new ByteArrayStorage(newSize - size);
+        data[count++] = storageFactory.create(size, newSize - size);
         size = newSize;
     }
 

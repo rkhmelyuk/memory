@@ -2,6 +2,7 @@ package com.khmelyuk.memory.vm;
 
 import com.khmelyuk.memory.Memory;
 import com.khmelyuk.memory.OutOfMemoryException;
+import com.khmelyuk.memory.vm.storage.ByteArrayStorageFactory;
 import com.khmelyuk.memory.vm.storage.DynamicStorage;
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 import org.junit.Assert;
@@ -89,8 +90,7 @@ public class DynamicVirtualMemoryTestCase extends VirtualMemoryTestCase {
     @Test
     public void testAllocateManyElements() {
         VirtualMemory memory = new DynamicVirtualMemory(
-                new DynamicStorage(100, 10 * Memory.MB, 100),
-                100, 10 * Memory.MB, 100,
+                new DynamicStorage(100, 10 * Memory.MB, 100, ByteArrayStorageFactory.getInstance()),
                 new LinkedVirtualMemoryTable(100));
 
         for (int i = 0; i < 1000; i++) {
@@ -159,8 +159,7 @@ public class DynamicVirtualMemoryTestCase extends VirtualMemoryTestCase {
 
     protected VirtualMemory createVirtualMemory(int size) {
         return new DynamicVirtualMemory(
-                new DynamicStorage(size, size * 5, size),
-                size, size * 5, size,
+                new DynamicStorage(size, size * 5, size, ByteArrayStorageFactory.getInstance()),
                 new LinkedVirtualMemoryTable(size));
     }
 }

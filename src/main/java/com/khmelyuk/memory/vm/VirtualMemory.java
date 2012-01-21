@@ -55,6 +55,12 @@ public interface VirtualMemory {
      */
     void free(VirtualMemoryBlock block);
 
+    /**
+     * Sets the free memory listener.
+     * @param listener the listener to set.
+     */
+    void setFreeEventListener(FreeEventListener listener);
+
     // -------------------------------------------------
 
     /**

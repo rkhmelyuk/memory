@@ -20,6 +20,8 @@ public class FixedVirtualMemory implements VirtualMemory {
     private VirtualMemoryTable table;
     private int size;
 
+    private FreeEventListener freeEventListener;
+
     public FixedVirtualMemory(Storage storage, VirtualMemoryTable table) {
         this.table = table;
         this.storage = storage;
@@ -55,10 +57,18 @@ public class FixedVirtualMemory implements VirtualMemory {
         storage.free();
         table.reset(0);
         size = 0;
+
+        if (freeEventListener != null) {
+            freeEventListener.onFree(this);
+        }
     }
 
     public void free(VirtualMemoryBlock block) {
         table.free(block.getBlock());
+    }
+
+    public void setFreeEventListener(FreeEventListener listener) {
+        this.freeEventListener = listener;
     }
 
     // ---------------------------------------------- Read/write support

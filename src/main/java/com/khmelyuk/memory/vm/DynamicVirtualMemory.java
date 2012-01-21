@@ -27,14 +27,17 @@ public class DynamicVirtualMemory implements VirtualMemory {
     private final int growth;
     private final VirtualMemoryTable table;
 
-    public DynamicVirtualMemory(DynamicStorage storage, int size, int maxSize, int growth, VirtualMemoryTable table) {
+    private FreeEventListener freeEventListener;
+
+    public DynamicVirtualMemory(DynamicStorage storage, VirtualMemoryTable table) {
+        int growth = storage.getGrowth();
         growth = (growth != 0 ? growth : 1);
 
-        this.storage = storage;
-        this.size = size;
-        this.maxSize = maxSize;
-        this.growth = growth;
         this.table = table;
+        this.growth = growth;
+        this.storage = storage;
+        this.size = storage.size();
+        this.maxSize = storage.getMaxSize();
     }
 
     public int size() {
@@ -110,10 +113,18 @@ public class DynamicVirtualMemory implements VirtualMemory {
         storage.free();
         table.reset(0);
         size = 0;
+
+        if (freeEventListener != null) {
+            freeEventListener.onFree(this);
+        }
     }
 
     public void free(VirtualMemoryBlock block) {
         table.free(block.getBlock());
+    }
+
+    public void setFreeEventListener(FreeEventListener listener) {
+        this.freeEventListener = listener;
     }
 
     // ----------------------------------------------------------

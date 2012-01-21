@@ -2,12 +2,17 @@ package com.khmelyuk.memory.vm;
 
 import com.khmelyuk.memory.Memory;
 import com.khmelyuk.memory.vm.storage.ByteArrayStorage;
+import com.khmelyuk.memory.vm.storage.ByteArrayStorageFactory;
 import com.khmelyuk.memory.vm.storage.ByteBufferStorage;
 import com.khmelyuk.memory.vm.storage.DynamicStorage;
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 /**
  * Test performance for different linked virtual memory tables
@@ -51,6 +56,17 @@ public class VMPerformanceTestCase {
         }
 
         System.out.println("Fixed byte array: Avg. duration " + (total / N) + "ms");
+    }
+
+    @Test
+    public void testFixedFileVMPerformance() {
+        testPerformance(createFixedFileVirtualMemory(), 0);
+        long total = 0;
+        for (int i = 0; i < N; i++) {
+            total += testPerformance(createFixedFileVirtualMemory(), i);
+        }
+
+        System.out.println("Fixed file: Avg. duration " + (total / N) + "ms");
     }
 
     @Test
@@ -109,11 +125,43 @@ public class VMPerformanceTestCase {
                 new LinkedVirtualMemoryTable(SIZE));
     }
 
+    private static VirtualMemory createFixedFileVirtualMemory() {
+        try {
+            File file = new File("vm-performance.test");
+            final RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+            final FileChannel channel = randomAccessFile.getChannel();
+            channel.force(true);
+
+            ByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, SIZE);
+
+            VirtualMemory vm = new FixedVirtualMemory(
+                    new ByteBufferStorage(buffer),
+                    new LinkedVirtualMemoryTable(SIZE));
+
+            vm.setFreeEventListener(new FreeEventListener() {
+                public void onFree(VirtualMemory memory) {
+                    try {
+                        channel.close();
+                        randomAccessFile.close();
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            return vm;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private static DynamicVirtualMemory createDynamicVirtualMemory() {
         int size = SIZE / 1000;
         return new DynamicVirtualMemory(
-                new DynamicStorage(size, SIZE, size),
-                size, SIZE, size,
+                new DynamicStorage(size, SIZE, size, ByteArrayStorageFactory.getInstance()),
                 new LinkedVirtualMemoryTable(size));
     }
 

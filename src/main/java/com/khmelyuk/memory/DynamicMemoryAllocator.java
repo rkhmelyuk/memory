@@ -1,6 +1,7 @@
 package com.khmelyuk.memory;
 
 import com.khmelyuk.memory.vm.DynamicVirtualMemory;
+import com.khmelyuk.memory.vm.storage.ByteArrayStorageFactory;
 import com.khmelyuk.memory.vm.storage.DynamicStorage;
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 
@@ -29,17 +30,18 @@ public class DynamicMemoryAllocator {
             return new FixedMemoryAllocator().allocate(size);
         }
 
-        return new Memory(new DynamicVirtualMemory(
-                new DynamicStorage(size, maxSize, growthStepSize),
+        DynamicStorage storage = new DynamicStorage(
                 size, maxSize, growthStepSize,
-                new LinkedVirtualMemoryTable(size)));
+                ByteArrayStorageFactory.getInstance());
+
+        return new Memory(new DynamicVirtualMemory(storage, new LinkedVirtualMemoryTable(size)));
     }
 
     /**
      * Allocates a memory with specified size, and sets the max size the memory can grow to.
      *
-     * @param size           the memory size.
-     * @param maxSize        the max size for the memory
+     * @param size    the memory size.
+     * @param maxSize the max size for the memory
      * @return the memory with specified size.
      */
     public Memory allocate(int size, int maxSize) {
