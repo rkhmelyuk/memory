@@ -1,57 +1,91 @@
 package com.khmelyuk.memory;
 
 import com.khmelyuk.memory.space.Space;
-import com.khmelyuk.memory.vm.FixedVirtualMemory;
-import com.khmelyuk.memory.vm.storage.ByteBufferStorage;
-import com.khmelyuk.memory.vm.storage.Storage;
-import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 
 /**
  * @author Ruslan Khmelyuk
  */
 public class MemoryFileTestCase {
 
-    @Test
-    public void testBackedByFile() throws Exception {
-        int size = 10000000;
-        File file = new File("test.txt");
-        FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
-        ByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, size + 130, size);
-        Storage storage = new ByteBufferStorage(buffer);
+    private final FileMemoryAllocator allocator = new FileMemoryAllocator();
 
-        Memory memory = new Memory(
-                new FixedVirtualMemory(storage,
-                        new LinkedVirtualMemoryTable(size)));
+    @Test
+    public void testFixedSizedFileMemory() throws Exception {
+        int size = 1000;
+
+        File file = new File("file-memory.test");
+        Memory memory = allocator.allocate(file, size);
 
         Space space = memory.allocate(200);
         space.write("Hello world of goo");
 
         space.free();
+        memory.free();
 
-        channel.close();
-
-        channel = new RandomAccessFile(file, "rw").getChannel();
-        buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
-        storage = new ByteBufferStorage(buffer);
-
-        memory = new Memory(
-                new FixedVirtualMemory(storage,
-                        new LinkedVirtualMemoryTable(size)));
+        memory = allocator.allocate(file, size);
 
         space = memory.allocate(200);
         Assert.assertEquals("Hello world of goo", space.readString());
 
         space.free();
+        memory.free();
 
+        file.deleteOnExit();
+    }
 
+    @Test
+    public void testDynamicSizedFileMemory() throws Exception {
+        int size = 1000;
 
-        channel.close();
+        File file = new File("dynamic-file-memory.test");
+        Memory memory = allocator.allocate(file, size, 10000);
+
+        for (int i = 0; i < 20; i++) {
+            Assert.assertNotNull(memory.allocate(200));
+        }
+
+        Assert.assertEquals(4000, memory.size());
+
+        memory.free();
+
+        Assert.assertEquals(4000, file.length());
+        file.deleteOnExit();
+    }
+
+    @Test
+    public void testDynamicSizedFileMemory_Write() throws Exception {
+        int size = 1000;
+
+        File file = new File("dynamic-file-memory-write.test");
+        Memory memory = allocator.allocate(file, size, 10000);
+
+        final byte[] data = new byte[175];
+        for (int j = 0; j < 175; j++) {
+            data[j] = (byte) j;
+        }
+        for (int i = 0; i < 20; i++) {
+            Space space = memory.allocate(175);
+            space.getBlock().write(data);
+        }
+
+        Assert.assertEquals(4000, memory.size());
+
+        memory.free();
+
+        Assert.assertEquals(4000, file.length());
+
+        memory = allocator.allocate(file, size, 10000);
+        for (int i = 0; i < 20; i++) {
+            Space space = memory.allocate(175);
+            byte[] read = new byte[175];
+            space.getBlock().read(read);
+            Assert.assertArrayEquals(data, read);
+        }
+
+        file.deleteOnExit();
     }
 }
