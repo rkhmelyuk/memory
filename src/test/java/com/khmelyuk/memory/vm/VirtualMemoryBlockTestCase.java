@@ -1,10 +1,10 @@
 package com.khmelyuk.memory.vm;
 
+import com.khmelyuk.memory.OutOfBoundException;
+import com.khmelyuk.memory.vm.storage.ByteArrayStorage;
+import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.khmelyuk.memory.OutOfBoundException;
-import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -17,7 +17,7 @@ public class VirtualMemoryBlockTestCase {
 
     @Test
     public void testGetInputStream() throws Exception {
-        VirtualMemory memory = new FixedVirtualMemory(10, new LinkedVirtualMemoryTable(10));
+        VirtualMemory memory = createFixedVirtualMemory(10);
         VirtualMemoryBlock block = memory.allocate(5);
 
         block.write(new byte[]{10, 20, 30, 40});
@@ -31,7 +31,7 @@ public class VirtualMemoryBlockTestCase {
 
     @Test
     public void testGetOutputStream() throws Exception {
-        VirtualMemory memory = new FixedVirtualMemory(10, new LinkedVirtualMemoryTable(10));
+        VirtualMemory memory = createFixedVirtualMemory(10);
         VirtualMemoryBlock block = memory.allocate(5);
 
         block.write(new byte[]{10, 20, 30, 40});
@@ -50,7 +50,7 @@ public class VirtualMemoryBlockTestCase {
 
     @Test(expected = OutOfBoundException.class)
     public void testWriteTooMuch() {
-        VirtualMemory memory = new FixedVirtualMemory(10, new LinkedVirtualMemoryTable(10));
+        VirtualMemory memory = createFixedVirtualMemory(10);
         VirtualMemoryBlock block = memory.allocate(5);
 
         block.write(new byte[]{10, 20, 30, 40, 50, 60});
@@ -58,7 +58,7 @@ public class VirtualMemoryBlockTestCase {
 
     @Test
     public void testWriteWithOffsetAndLength() {
-        VirtualMemory memory = new FixedVirtualMemory(10, new LinkedVirtualMemoryTable(10));
+        VirtualMemory memory = createFixedVirtualMemory(10);
         VirtualMemoryBlock block = memory.allocate(5);
 
         block.write(new byte[]{10, 20, 30}, 2, 2);
@@ -72,7 +72,7 @@ public class VirtualMemoryBlockTestCase {
 
     @Test
     public void testWriteWithWrongLength() {
-        VirtualMemory memory = new FixedVirtualMemory(10, new LinkedVirtualMemoryTable(10));
+        VirtualMemory memory = createFixedVirtualMemory(10);
         VirtualMemoryBlock block = memory.allocate(5);
 
         block.write(new byte[]{10, 20, 30}, 2, 10);
@@ -87,7 +87,7 @@ public class VirtualMemoryBlockTestCase {
 
     @Test(expected = OutOfBoundException.class)
     public void testWriteOutOfBound() {
-        VirtualMemory memory = new FixedVirtualMemory(10, new LinkedVirtualMemoryTable(10));
+        VirtualMemory memory = createFixedVirtualMemory(10);
         VirtualMemoryBlock block = memory.allocate(5);
 
         block.write(new byte[]{10, 20, 30}, 3, 3);
@@ -95,7 +95,7 @@ public class VirtualMemoryBlockTestCase {
 
     @Test
     public void testReadWithOffsetAndLengthOutOfBound() {
-        VirtualMemory memory = new FixedVirtualMemory(10, new LinkedVirtualMemoryTable(10));
+        VirtualMemory memory = createFixedVirtualMemory(10);
         VirtualMemoryBlock block1 = memory.allocate(5);
         VirtualMemoryBlock block2 = memory.allocate(5);
 
@@ -107,7 +107,7 @@ public class VirtualMemoryBlockTestCase {
 
     @Test
     public void testReadOutOfBound() {
-        VirtualMemory memory = new FixedVirtualMemory(10, new LinkedVirtualMemoryTable(10));
+        VirtualMemory memory = createFixedVirtualMemory(10);
         VirtualMemoryBlock block1 = memory.allocate(5);
         VirtualMemoryBlock block2 = memory.allocate(5);
 
@@ -119,7 +119,7 @@ public class VirtualMemoryBlockTestCase {
 
     @Test
     public void testDump() throws Exception {
-        VirtualMemory memory = new FixedVirtualMemory(10, new LinkedVirtualMemoryTable(10));
+        VirtualMemory memory = createFixedVirtualMemory(10);
         VirtualMemoryBlock block = memory.allocate(5);
         byte[] data = {10, 20, 30, 40, 50};
 
@@ -130,5 +130,11 @@ public class VirtualMemoryBlockTestCase {
 
         byte[] read = out.toByteArray();
         Assert.assertArrayEquals(data, read);
+    }
+
+    private VirtualMemory createFixedVirtualMemory(int size) {
+        return new FixedVirtualMemory(
+                new ByteArrayStorage(size),
+                new LinkedVirtualMemoryTable(size));
     }
 }

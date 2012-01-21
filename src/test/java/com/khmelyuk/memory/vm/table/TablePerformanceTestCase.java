@@ -22,7 +22,7 @@ public class TablePerformanceTestCase {
             total += testPerformance(new LinkedVirtualMemoryTable(SIZE), i);
         }
 
-        System.out.println("init: Avg. duration " + (total / N) + "ms");
+        //System.out.println("init: Avg. duration " + (total / N) + "ms");
     }
 
     @Test

@@ -1,9 +1,9 @@
 package com.khmelyuk.memory.vm;
 
+import com.khmelyuk.memory.vm.storage.ByteArrayStorage;
+import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 
 /**
  * @author Ruslan Khmelyuk
@@ -101,6 +101,8 @@ public class VMInputStreamTestCase {
     }
 
     private VirtualMemory createVirtualMemory(int size) {
-        return new FixedVirtualMemory(size, new LinkedVirtualMemoryTable(size));
+        return new FixedVirtualMemory(
+                new ByteArrayStorage(size),
+                new LinkedVirtualMemoryTable(size));
     }
 }

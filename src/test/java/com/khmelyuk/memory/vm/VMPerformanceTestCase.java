@@ -1,6 +1,7 @@
 package com.khmelyuk.memory.vm;
 
 import com.khmelyuk.memory.Memory;
+import com.khmelyuk.memory.vm.storage.ByteArrayStorage;
 import com.khmelyuk.memory.vm.storage.ByteBufferStorage;
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 import org.junit.Test;
@@ -14,41 +15,41 @@ import java.nio.ByteBuffer;
  */
 public class VMPerformanceTestCase {
 
-    static final int N = 1;
+    static final int N = 5;
     static final int SIZE = 2 * Memory.MB;
     static final int COUNT_COEFF = 2000;
 
-   /* @Test
-    public void testFixed2VMPerformance() {
-        testPerformance(createFixed2VirtualMemory(), 0);
-        long total = 0;
-        for (int i = 0; i < N; i++) {
-            total += testPerformance(createFixed2VirtualMemory(), i);
-        }
-
-        System.out.println("F2VM: Avg. duration " + (total / N) + "ms");
-    }*/
-
     @Test
-    public void testFixed21VMPerformance() {
-        testPerformance(createFixed2VirtualMemory(), 0);
-        long total = 0;
-        for (int i = 0; i < N; i++) {
-            total += testPerformance(createFixed2VirtualMemory(), i);
-        }
-
-        System.out.println("F21VM: Avg. duration " + (total / N) + "ms");
-    }
-
-    @Test
-    public void testFixedVMPerformance() {
+    public void testInitPerformance() {
         testPerformance(createFixedVirtualMemory(), 0);
         long total = 0;
         for (int i = 0; i < N; i++) {
             total += testPerformance(createFixedVirtualMemory(), i);
         }
 
-        System.out.println("FVM: Avg. duration " + (total / N) + "ms");
+        //System.out.println("init: Avg. duration " + (total / N) + "ms");
+    }
+
+    @Test
+    public void testFixedBufferVMPerformance() {
+        testPerformance(createFixedBBVirtualMemory(), 0);
+        long total = 0;
+        for (int i = 0; i < N; i++) {
+            total += testPerformance(createFixedBBVirtualMemory(), i);
+        }
+
+        System.out.println("Fixed byte buffer: Avg. duration " + (total / N) + "ms");
+    }
+
+    @Test
+    public void testFixedArrayVMPerformance() {
+        testPerformance(createFixedVirtualMemory(), 0);
+        long total = 0;
+        for (int i = 0; i < N; i++) {
+            total += testPerformance(createFixedVirtualMemory(), i);
+        }
+
+        System.out.println("Fixed byte array: Avg. duration " + (total / N) + "ms");
     }
 
     @Test
@@ -56,22 +57,10 @@ public class VMPerformanceTestCase {
         testPerformance(createDynamicVirtualMemory(), 0);
         long total = 0;
         for (int i = 0; i < N; i++) {
-            DynamicVirtualMemory vm = createDynamicVirtualMemory();
-            total += testPerformance(vm, i);
+            total += testPerformance(createDynamicVirtualMemory(), i);
         }
 
-        System.out.println("DVM: Avg. duration " + (total / N) + "ms");
-    }
-
-    @Test
-    public void testByteBufferVMPerformance() {
-        long total = testPerformance(createByteBufferVirtualMemory(), 0);
-        /*long total = 0;
-        for (int i = 0; i < N; i++) {
-            total += testPerformance(createByteBufferVirtualMemory(), i);
-        }*/
-
-        System.out.println("BBVM: Avg. duration " + (total / 1) + "ms");
+        System.out.println("Dynamic: Avg. duration " + (total / N) + "ms");
     }
 
     private long testPerformance(VirtualMemory vm, int n) {
@@ -108,12 +97,14 @@ public class VMPerformanceTestCase {
     }
 
     private static VirtualMemory createFixedVirtualMemory() {
-        return new FixedVirtualMemory(SIZE,
+        return new FixedVirtualMemory(
+                new ByteArrayStorage(SIZE),
                 new LinkedVirtualMemoryTable(SIZE));
     }
 
-    private static VirtualMemory createFixed2VirtualMemory() {
-        return new Fixed2VirtualMemory(new ByteBufferStorage(ByteBuffer.allocate(SIZE)),
+    private static VirtualMemory createFixedBBVirtualMemory() {
+        return new FixedVirtualMemory(
+                new ByteBufferStorage(ByteBuffer.allocate(SIZE)),
                 new LinkedVirtualMemoryTable(SIZE));
     }
 
@@ -123,9 +114,4 @@ public class VMPerformanceTestCase {
                 new LinkedVirtualMemoryTable(size));
     }
 
-    private static VirtualMemory createByteBufferVirtualMemory() {
-        return new ByteBufferVirtualMemory(
-                ByteBuffer.allocate(SIZE),
-                new LinkedVirtualMemoryTable(SIZE));
-    }
 }

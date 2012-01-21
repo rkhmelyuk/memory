@@ -2,6 +2,7 @@ package com.khmelyuk.memory.vm;
 
 import com.khmelyuk.memory.OutOfBoundException;
 import com.khmelyuk.memory.OutOfMemoryException;
+import com.khmelyuk.memory.vm.storage.Storage;
 import com.khmelyuk.memory.vm.table.Block;
 import com.khmelyuk.memory.vm.table.VirtualMemoryTable;
 
@@ -15,14 +16,14 @@ import java.io.OutputStream;
  */
 public class FixedVirtualMemory implements VirtualMemory {
 
-    private byte[] data;
+    private Storage storage;
     private VirtualMemoryTable table;
     private int size;
 
-    public FixedVirtualMemory(int length, VirtualMemoryTable table) {
-        this.size = length;
-        this.data = new byte[length];
+    public FixedVirtualMemory(Storage storage, VirtualMemoryTable table) {
         this.table = table;
+        this.storage = storage;
+        this.size = storage.size();
     }
 
     public int size() {
@@ -51,7 +52,7 @@ public class FixedVirtualMemory implements VirtualMemory {
     }
 
     public void free() {
-        data = new byte[0];
+        storage.free();
         table.reset(0);
         size = 0;
     }
@@ -87,64 +88,30 @@ public class FixedVirtualMemory implements VirtualMemory {
     }
 
     public void write(byte[] data) throws OutOfBoundException {
-        if (data.length > this.data.length) {
-            throw new OutOfBoundException();
-        }
-
-        System.arraycopy(data, 0, this.data, 0, data.length);
+        this.storage.write(data);
     }
 
     public void write(byte[] data, int offset) throws OutOfBoundException {
-        if (offset >= size || data.length + offset > size) {
-            throw new OutOfBoundException();
-        }
-
-        System.arraycopy(data, 0, this.data, offset, data.length);
+        this.storage.write(data, offset);
     }
 
     public void write(byte[] data, int offset, int length) throws OutOfBoundException {
-        if (offset >= size || length + offset > size) {
-            throw new OutOfBoundException();
-        }
-
-        System.arraycopy(data, 0, this.data, offset, length);
+        this.storage.write(data, offset, length);
     }
 
-    public int read(byte[] data) {
-        int length = data.length;
-        if (length > size) {
-            length = size;
-        }
-
-        System.arraycopy(this.data, 0, data, 0, length);
-
-        return length;
+    public int read(byte[] data) throws OutOfBoundException {
+        return this.storage.read(data);
     }
 
     public int read(byte[] data, int offset, int length) {
-        if (data.length < length) {
-            length = data.length;
-        }
-        if (length == 0 || offset + length > size) {
-            return -1;
-        }
-
-        System.arraycopy(this.data, offset, data, 0, length);
-
-        return length;
+        return this.storage.read(data, offset, length);
     }
 
     public void write(byte data, int offset) throws OutOfBoundException {
-        if (offset >= size) {
-            throw new OutOfBoundException();
-        }
-        this.data[offset] = data;
+        this.storage.write(data, offset);
     }
 
     public byte read(int offset) {
-        if (offset >= size) {
-            return -1;
-        }
-        return this.data[offset];
+        return this.storage.read(offset);
     }
 }

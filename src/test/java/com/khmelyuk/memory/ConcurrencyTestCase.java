@@ -3,6 +3,7 @@ package com.khmelyuk.memory;
 import com.khmelyuk.memory.vm.FixedVirtualMemory;
 import com.khmelyuk.memory.vm.VirtualMemory;
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
+import com.khmelyuk.memory.vm.storage.ByteArrayStorage;
 import com.khmelyuk.memory.vm.table.Block;
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 import com.khmelyuk.memory.vm.table.VirtualMemoryTable;
@@ -78,7 +79,8 @@ public class ConcurrencyTestCase {
     }
 
     private static VirtualMemory createVirtualMemory() {
-        return new FixedVirtualMemory(SIZE,
+        return new FixedVirtualMemory(
+                new ByteArrayStorage(SIZE),
                 new LinkedVirtualMemoryTable(SIZE));
     }
 

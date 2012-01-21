@@ -1,6 +1,7 @@
 package com.khmelyuk.memory;
 
 import com.khmelyuk.memory.vm.FixedVirtualMemory;
+import com.khmelyuk.memory.vm.storage.ByteArrayStorage;
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 
 /**
@@ -19,7 +20,8 @@ public class FixedMemoryAllocator {
     public Memory allocate(int size) {
         assert size >= 0: "Memory size can't negative";
 
-        return new Memory(new FixedVirtualMemory(size,
+        return new Memory(new FixedVirtualMemory(
+                new ByteArrayStorage(size),
                 new LinkedVirtualMemoryTable(size)));
     }
 }
