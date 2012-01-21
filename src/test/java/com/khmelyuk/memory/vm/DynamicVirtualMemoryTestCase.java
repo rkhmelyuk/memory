@@ -1,11 +1,11 @@
 package com.khmelyuk.memory.vm;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.khmelyuk.memory.Memory;
 import com.khmelyuk.memory.OutOfMemoryException;
+import com.khmelyuk.memory.vm.storage.DynamicStorage;
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author Ruslan Khmelyuk
@@ -48,7 +48,7 @@ public class DynamicVirtualMemoryTestCase extends VirtualMemoryTestCase {
         VirtualMemoryBlock block = memory.allocate(200);
 
         byte[] data = generateData(200);
-        block.write(generateData(200));
+        block.write(data);
 
         byte[] read = new byte[200];
         block.read(read);
@@ -63,7 +63,7 @@ public class DynamicVirtualMemoryTestCase extends VirtualMemoryTestCase {
         memory.allocate(200);
 
         byte[] data = generateData(200);
-        memory.write(generateData(200));
+        memory.write(data);
 
         byte[] read = new byte[200];
         memory.read(read);
@@ -89,8 +89,9 @@ public class DynamicVirtualMemoryTestCase extends VirtualMemoryTestCase {
     @Test
     public void testAllocateManyElements() {
         VirtualMemory memory = new DynamicVirtualMemory(
-                        100, 10 * Memory.MB, 100,
-                        new LinkedVirtualMemoryTable(100));
+                new DynamicStorage(100, 10 * Memory.MB, 100),
+                100, 10 * Memory.MB, 100,
+                new LinkedVirtualMemoryTable(100));
 
         for (int i = 0; i < 1000; i++) {
             Assert.assertNotNull(memory.allocate(60));
@@ -158,6 +159,7 @@ public class DynamicVirtualMemoryTestCase extends VirtualMemoryTestCase {
 
     protected VirtualMemory createVirtualMemory(int size) {
         return new DynamicVirtualMemory(
+                new DynamicStorage(size, size * 5, size),
                 size, size * 5, size,
                 new LinkedVirtualMemoryTable(size));
     }

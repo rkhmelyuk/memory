@@ -24,4 +24,5 @@ public class FixedMemoryAllocator {
                 new ByteArrayStorage(size),
                 new LinkedVirtualMemoryTable(size)));
     }
+
 }

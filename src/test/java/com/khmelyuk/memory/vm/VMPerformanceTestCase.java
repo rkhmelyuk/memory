@@ -3,6 +3,7 @@ package com.khmelyuk.memory.vm;
 import com.khmelyuk.memory.Memory;
 import com.khmelyuk.memory.vm.storage.ByteArrayStorage;
 import com.khmelyuk.memory.vm.storage.ByteBufferStorage;
+import com.khmelyuk.memory.vm.storage.DynamicStorage;
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 import org.junit.Test;
 
@@ -110,7 +111,9 @@ public class VMPerformanceTestCase {
 
     private static DynamicVirtualMemory createDynamicVirtualMemory() {
         int size = SIZE / 1000;
-        return new DynamicVirtualMemory(size, SIZE, size,
+        return new DynamicVirtualMemory(
+                new DynamicStorage(size, SIZE, size),
+                size, SIZE, size,
                 new LinkedVirtualMemoryTable(size));
     }
 

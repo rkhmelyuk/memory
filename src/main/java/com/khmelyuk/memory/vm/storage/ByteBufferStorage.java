@@ -57,6 +57,17 @@ public final class ByteBufferStorage implements Storage {
         buf.put(data, 0, length);
     }
 
+    @Override
+    public void write(byte[] data, int offset, int dataOffset, int length) throws OutOfBoundException {
+        if (offset >= size || length + offset > size) {
+            throw new OutOfBoundException();
+        }
+
+        ByteBuffer buf = this.data.slice();
+        buf.position(offset);
+        buf.put(data, dataOffset, length);
+    }
+
     public int read(byte[] data) throws OutOfBoundException {
         int length = data.length;
         if (length > size) {
@@ -79,6 +90,22 @@ public final class ByteBufferStorage implements Storage {
         ByteBuffer buf = this.data.slice();
         buf.position(offset);
         buf.get(data, 0, length);
+
+        return length;
+    }
+
+    @Override
+    public int read(byte[] data, int offset, int dataOffset, int length) {
+        if (offset + length > size) {
+            length = size - offset;
+        }
+        if (length == 0) {
+            return -1;
+        }
+
+        ByteBuffer buf = this.data.slice();
+        buf.position(offset);
+        buf.get(data, dataOffset, length);
 
         return length;
     }

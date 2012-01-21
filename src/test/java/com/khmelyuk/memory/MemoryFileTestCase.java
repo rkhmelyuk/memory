@@ -23,7 +23,7 @@ public class MemoryFileTestCase {
         int size = 10000000;
         File file = new File("test.txt");
         FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
-        ByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
+        ByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, size + 130, size);
         Storage storage = new ByteBufferStorage(buffer);
 
         Memory memory = new Memory(
@@ -49,6 +49,8 @@ public class MemoryFileTestCase {
         Assert.assertEquals("Hello world of goo", space.readString());
 
         space.free();
+
+
 
         channel.close();
     }

@@ -50,7 +50,13 @@ public interface VirtualMemoryTable {
      * This will not affect any existing allocations, but only extend the free size.
      *
      * @param size the new size for table.
-     * @return true if size was changed.
      */
-    boolean increaseSize(int size);
+    void increaseSize(int size);
+
+    /**
+     * Check if possible to increase a table size to specified size.
+     * @param size the size to increase to.
+     * @return true if size can be increased.
+     */
+    boolean canIncreaseSize(int size);
 }

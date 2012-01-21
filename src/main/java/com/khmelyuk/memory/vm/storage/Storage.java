@@ -11,6 +11,7 @@ public interface Storage {
 
     /**
      * Gets a storage size.
+     *
      * @return a storage size.
      */
     int size();
@@ -58,6 +59,18 @@ public interface Storage {
     void write(byte[] data, int offset, int length) throws OutOfBoundException;
 
     /**
+     * Writes the byte array directly to the virtual memory
+     * started from specified offset and with specified size.
+     *
+     * @param data       the byte array to write to the virtual memory.
+     * @param offset     the offset to write to.
+     * @param length     the size of the data to write to.
+     * @param dataOffset the of data to read from.
+     * @throws OutOfBoundException error to access the memory out of bound.
+     */
+    void write(byte[] data, int offset, int dataOffset, int length) throws OutOfBoundException;
+
+    /**
      * Read data from virtual memory into byte array and returns the number of read bytes.
      *
      * @param data the buffer to read data from VM to.
@@ -82,4 +95,15 @@ public interface Storage {
      * @return the number of read bytes.
      */
     int read(byte[] data, int offset, int length);
+
+    /**
+     * Read data from virtual memory into byte array from specified offset and with specified size.
+     *
+     * @param data       the buffer to read data from VM to.
+     * @param offset     the offset of the storage.
+     * @param dataOffset the offset of the data.
+     * @param length how many bytes to read into buffer.
+     * @return the number of read bytes.
+     */
+    int read(byte[] data, int offset, int dataOffset, int length);
 }

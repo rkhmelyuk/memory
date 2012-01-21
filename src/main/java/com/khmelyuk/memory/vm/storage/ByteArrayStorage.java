@@ -50,6 +50,15 @@ public final class ByteArrayStorage implements Storage {
         System.arraycopy(data, 0, this.data, offset, length);
     }
 
+    @Override
+    public void write(byte[] data, int offset, int dataOffset, int length) throws OutOfBoundException {
+        if (offset >= size || length + offset > size) {
+            throw new OutOfBoundException();
+        }
+
+        System.arraycopy(data, dataOffset, this.data, offset, length);
+    }
+
     public int read(byte[] data) {
         int length = data.length;
         if (length > size) {
@@ -70,6 +79,20 @@ public final class ByteArrayStorage implements Storage {
         }
 
         System.arraycopy(this.data, offset, data, 0, length);
+
+        return length;
+    }
+
+    @Override
+    public int read(byte[] data, int offset, int dataOffset, int length) {
+        if (data.length < length) {
+            length = data.length;
+        }
+        if (length == 0 || offset + length > size) {
+            return -1;
+        }
+
+        System.arraycopy(this.data, offset, data, dataOffset, length);
 
         return length;
     }

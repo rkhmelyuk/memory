@@ -244,22 +244,23 @@ public class QueueVirtualMemoryTable implements VirtualMemoryTable {
         free.add(freeAnchor);
     }
 
-    @Override
-    public boolean increaseSize(int size) {
+    public boolean canIncreaseSize(int size) {
         final int freeSize = freeMemorySize.get();
         final int usedSize = usedMemorySize.get();
         final int totalSize = freeSize + usedSize;
 
-        if (size < usedSize || size <= totalSize) {
-            return false;
-        }
+        return !(size < usedSize || size <= totalSize);
+    }
+
+    public void increaseSize(int size) {
+        final int freeSize = freeMemorySize.get();
+        final int usedSize = usedMemorySize.get();
+        final int totalSize = freeSize + usedSize;
 
         // increase memory size
         int incSize = size - totalSize;
         addFreeBlock(new TableBlock(totalSize, incSize));
         freeMemorySize.addAndGet(incSize);
-
-        return true;
     }
 
     /**

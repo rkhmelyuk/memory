@@ -1,6 +1,7 @@
 package com.khmelyuk.memory;
 
 import com.khmelyuk.memory.vm.DynamicVirtualMemory;
+import com.khmelyuk.memory.vm.storage.DynamicStorage;
 import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
 
 /**
@@ -29,6 +30,7 @@ public class DynamicMemoryAllocator {
         }
 
         return new Memory(new DynamicVirtualMemory(
+                new DynamicStorage(size, maxSize, growthStepSize),
                 size, maxSize, growthStepSize,
                 new LinkedVirtualMemoryTable(size)));
     }

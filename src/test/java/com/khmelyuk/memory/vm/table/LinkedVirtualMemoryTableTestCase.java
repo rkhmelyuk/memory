@@ -114,10 +114,11 @@ public class LinkedVirtualMemoryTableTestCase {
         LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
         table.allocate(20);
 
-        Assert.assertTrue(table.increaseSize(220));
+        Assert.assertTrue(table.canIncreaseSize(220));
+        table.increaseSize(220);
         Assert.assertEquals(200, table.getFreeMemorySize());
 
-        Assert.assertFalse(table.increaseSize(100));
+        Assert.assertFalse(table.canIncreaseSize(100));
     }
 
 }
