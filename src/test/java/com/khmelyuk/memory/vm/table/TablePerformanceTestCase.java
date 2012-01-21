@@ -15,6 +15,17 @@ public class TablePerformanceTestCase {
     static final int COUNT_COEFF = 2000;
 
     @Test
+    public void test2LinkedTablePerformance() {
+        testPerformance(new LinkedVirtualMemoryTable(SIZE), 0);
+        long total = 0;
+        for (int i = 0; i < N; i++) {
+            total += testPerformance(new LinkedVirtualMemoryTable(SIZE), i);
+        }
+
+        System.out.println("init: Avg. duration " + (total / N) + "ms");
+    }
+
+    @Test
     public void testLinkedTablePerformance() {
         testPerformance(new LinkedVirtualMemoryTable(SIZE), 0);
         long total = 0;
@@ -22,17 +33,31 @@ public class TablePerformanceTestCase {
             total += testPerformance(new LinkedVirtualMemoryTable(SIZE), i);
         }
 
-        System.out.println("LTP: Avg. duration " + (total / N) + "ms");
+        System.out.println("Linked: Avg. duration " + (total / N) + "ms");
     }
 
-    private static long testPerformance(VirtualMemoryTable table, int n) {
-        int max = COUNT_COEFF * (n + 5);
-        int avgBlockSize = table.getFreeMemorySize() / max;
+    @Test
+    public void testConcurrentLinkedTablePerformance() {
+        testPerformance(new LinkedVirtualMemoryTable(SIZE), 0);
+        long total = 0;
+        for (int i = 0; i < N; i++) {
+            total += testPerformance(new LinkedVirtualMemoryTable(SIZE), i);
+        }
 
-        Block[] blocks = new Block[max];
+        System.out.println("Concurrent: Avg. duration " + (total / N) + "ms");
+    }
+
+    private static long testPerformance(final VirtualMemoryTable table, int n) {
+        final int max = COUNT_COEFF * (n + 5);
+        final int avgBlockSize = table.getFreeMemorySize() / max;
+        final Block[] blocks = new Block[max];
+
         long begin = System.currentTimeMillis();
         for (int i = 0; i < max; i++) {
             blocks[i] = table.allocate(avgBlockSize);
+            /*if (blocks[i] != null) {
+                System.out.println(blocks[i]);
+            }*/
             if (i != 0) {
                 free(table, blocks, i - 1);
             }
