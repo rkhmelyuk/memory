@@ -15,6 +15,21 @@ public class ConcurrencyTablePerformanceTestCase {
     static final int COUNT_COEFF = 2000;
     static final int THREAD_NUM = 3;
 
+    /*@Test
+    public void testLinkedTablePerformance() throws Exception {
+        testPerformance(new LinkedVirtualMemoryTable(SIZE), 0, THREAD_NUM);
+        long total = 0;
+        for (int i = 0; i < N; i++) {
+            VirtualMemoryTable table = new LinkedVirtualMemoryTable(SIZE);
+            total += testPerformance(table, i, THREAD_NUM);
+
+            new VirtualMemoryTableVisualizer().printUsage(table, 5 * Memory.KB);
+            break;
+        }
+
+        System.out.println("Linked: Avg. duration " + (total / N) + "ms");
+    }*/
+
     @Test
     public void testLinkedTablePerformance() throws Exception {
         testPerformance(new LinkedVirtualMemoryTable(SIZE), 0, THREAD_NUM);
@@ -68,14 +83,15 @@ public class ConcurrencyTablePerformanceTestCase {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                int nullsCount = 0;
                 for (int i = 0; i < max; i++) {
                     blocks[i] = table.allocate(avgBlockSize);
-                    if (blocks[i] == null) {
-                        nullsCount++;
-                    }
-                    if (i % 2 == 0) {
-                        free(table, blocks, i - 1);
+                    if (i > 4) {
+                        if (i % 2 == 0) {
+                            free(table, blocks, i - 2);
+                        }
+                        if (Math.random() * 10 > 1) {
+                            free(table, blocks, i - 3);
+                        }
                     }
                 }
             }
@@ -100,7 +116,7 @@ public class ConcurrencyTablePerformanceTestCase {
         final int avgBlockSize = table.getFreeMemorySize() / max;
         final Block[] blocks = new Block[max];
 
-        final float[] nullsPercentTotal = new float[] {0};
+        final float[] nullsPercentTotal = new float[]{0};
 
         Runnable runnable = new Runnable() {
             @Override
@@ -111,12 +127,17 @@ public class ConcurrencyTablePerformanceTestCase {
                     if (blocks[i] == null) {
                         nullsCount++;
                     }
-                    if (i % 2 == 0) {
-                        free(table, blocks, i - 1);
+                    if (i > 4) {
+                        if (i % 2 == 0) {
+                            free(table, blocks, i - 2);
+                        }
+                        if (Math.random() * 10 > 1) {
+                            free(table, blocks, i - 3);
+                        }
                     }
                 }
 
-                nullsPercentTotal[0] +=  ((float)nullsCount / max) * 100;
+                nullsPercentTotal[0] += ((float) nullsCount / max) * 100;
             }
         };
 

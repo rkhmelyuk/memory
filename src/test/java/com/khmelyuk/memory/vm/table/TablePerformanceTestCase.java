@@ -37,14 +37,14 @@ public class TablePerformanceTestCase {
     }
 
     @Test
-    public void testConcurrentLinkedTablePerformance() {
-        testPerformance(new LinkedVirtualMemoryTable(SIZE), 0);
+    public void testQueueTablePerformance() {
+        testPerformance(new QueueVirtualMemoryTable(SIZE), 0);
         long total = 0;
         for (int i = 0; i < N; i++) {
-            total += testPerformance(new LinkedVirtualMemoryTable(SIZE), i);
+            total += testPerformance(new QueueVirtualMemoryTable(SIZE), i);
         }
 
-        System.out.println("Concurrent: Avg. duration " + (total / N) + "ms");
+        System.out.println("Queue: Avg. duration " + (total / N) + "ms");
     }
 
     private static long testPerformance(final VirtualMemoryTable table, int n) {
