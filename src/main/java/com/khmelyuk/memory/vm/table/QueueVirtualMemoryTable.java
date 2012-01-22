@@ -35,12 +35,12 @@ public class QueueVirtualMemoryTable implements VirtualMemoryTable {
         freeMemorySize = new AtomicInteger(size);
     }
 
-    public Collection<TableBlock> getUsed() {
-        return Collections.unmodifiableCollection(used);
+    public Collection<Block> getUsed() {
+        return Collections.<Block>unmodifiableCollection(used);
     }
 
-    public Collection<TableBlock> getFree() {
-        return Collections.unmodifiableCollection(free);
+    public Collection<Block> getFree() {
+        return Collections.<Block>unmodifiableCollection(free);
     }
 
     public Block allocate(int size) {

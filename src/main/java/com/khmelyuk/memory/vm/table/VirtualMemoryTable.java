@@ -1,11 +1,27 @@
 package com.khmelyuk.memory.vm.table;
 
+import java.util.Collection;
+
 /**
  * The table of virtual memory blocks.
  *
  * @author Ruslan Khmelyuk
  */
 public interface VirtualMemoryTable {
+
+    /**
+     * Gets the unmodifiable collection of used blocks.
+     *
+     * @return the collection of used blocks.
+     */
+    Collection<Block> getUsed();
+
+    /**
+     * Gets the unmodifiable collection of free blocks.
+     *
+     * @return the collection of free blocks.
+     */
+    Collection<Block> getFree();
 
     /**
      * Allocates a block of specified size.
@@ -55,6 +71,7 @@ public interface VirtualMemoryTable {
 
     /**
      * Check if possible to increase a table size to specified size.
+     *
      * @param size the size to increase to.
      * @return true if size can be increased.
      */
