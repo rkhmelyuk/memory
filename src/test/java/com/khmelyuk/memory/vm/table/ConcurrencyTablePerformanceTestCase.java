@@ -60,7 +60,6 @@ public class ConcurrencyTablePerformanceTestCase {
         System.out.println("Queue: Avg. nulls percentage " + Math.round(total / N) + "%");
     }
 
-
     private static long testPerformance(final VirtualMemoryTable table, int n, int threadsNum) throws Exception {
         final int max = COUNT_COEFF * (n + 5);
         final int avgBlockSize = table.getFreeMemorySize() / max;

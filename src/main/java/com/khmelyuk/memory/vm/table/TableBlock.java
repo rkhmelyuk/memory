@@ -9,9 +9,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 final class TableBlock implements Block, Comparable<TableBlock> {
 
+    private final AtomicBoolean lock = new AtomicBoolean(false);
+
     private int size;
     private int address;
-    private AtomicBoolean lock = new AtomicBoolean(false);
 
     public TableBlock(int address, int size) {
         this.address = address;

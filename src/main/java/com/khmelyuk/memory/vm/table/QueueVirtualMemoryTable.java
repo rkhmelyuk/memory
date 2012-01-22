@@ -3,6 +3,7 @@ package com.khmelyuk.memory.vm.table;
 import com.khmelyuk.memory.OutOfBoundException;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,11 +36,11 @@ public class QueueVirtualMemoryTable implements VirtualMemoryTable {
     }
 
     public Collection<TableBlock> getUsed() {
-        return used;
+        return Collections.unmodifiableCollection(used);
     }
 
     public Collection<TableBlock> getFree() {
-        return free;
+        return Collections.unmodifiableCollection(free);
     }
 
     public Block allocate(int size) {
