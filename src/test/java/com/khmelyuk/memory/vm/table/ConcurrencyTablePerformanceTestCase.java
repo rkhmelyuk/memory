@@ -41,7 +41,6 @@ public class ConcurrencyTablePerformanceTestCase {
         System.out.println("Linked: Avg. duration " + (total / N) + "ms");
     }
 
-
     @Test
     public void testQueueTablePerformance() throws Exception {
         testPerformance(new QueueVirtualMemoryTable(SIZE), 0, THREAD_NUM);

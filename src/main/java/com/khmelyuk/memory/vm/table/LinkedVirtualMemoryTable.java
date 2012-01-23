@@ -27,12 +27,8 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     private AtomicInteger freeMemorySize;
     private AtomicInteger usedMemorySize;
 
-    // point next free block
-    //private volatile TableBlock freeAnchor;
-
     public LinkedVirtualMemoryTable(int size) {
-        TableBlock freeAnchor = new TableBlock(0, size);
-        free.add(freeAnchor);
+        free.add(new TableBlock(0, size));
 
         usedMemorySize = new AtomicInteger(0);
         freeMemorySize = new AtomicInteger(size);
@@ -70,9 +66,6 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             finally {
                 // unlock asap
                 freeBlock.unlock();
-                /*if (freeBlock.getSize() > 0) {
-                    freeAnchor = freeBlock;
-                }*/
             }
 
             insertBlock(used, result, usedLock);
@@ -85,20 +78,6 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     }
 
     protected TableBlock getBlockToAllocate(int size) {
-        // simple performance optimization
-        /*
-        TODO - investigate - stats shows it's faster, less defragmented if not used freeAnchor
-        final TableBlock anchor = freeAnchor;
-        if (anchor.getSize() >= size) {
-            if (anchor.lock()) {
-                if (anchor.getSize() >= size) {
-                    return anchor;
-                }
-                anchor.unlock();
-
-            }
-        }
-        */
 
         boolean repeat;
         do {
@@ -158,7 +137,6 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     protected void addFreeBlock(TableBlock block) {
         if (!extendFreeMemory(block)) {
             insertBlock(free, block, freeLock);
-            //freeAnchor = block;
         }
     }
 
