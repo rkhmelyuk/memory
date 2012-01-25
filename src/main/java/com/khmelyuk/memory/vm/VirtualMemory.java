@@ -14,6 +14,12 @@ import java.io.OutputStream;
 public interface VirtualMemory {
 
     /**
+     * Gets the virtual memory statistic information.
+     * @return the virtual memory statistic information.
+     */
+    VirtualMemoryStatistic getStatistic();
+
+    /**
      * Gets the virtual memory size.
      *
      * @return the virtual memory size.

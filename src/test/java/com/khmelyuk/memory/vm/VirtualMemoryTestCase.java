@@ -103,4 +103,21 @@ public abstract class VirtualMemoryTestCase {
         Assert.assertEquals(40, data[3]);
     }
 
+    @Test
+    public void testGetStatistic() {
+        VirtualMemory memory = createVirtualMemory(100);
+        VirtualMemoryBlock block1 = memory.allocate(30);
+        VirtualMemoryBlock block2 = memory.allocate(50);
+
+        Assert.assertNotNull(block1);
+        Assert.assertNotNull(block2);
+
+        VirtualMemoryStatistic stats = memory.getStatistic();
+
+        Assert.assertEquals(20, stats.getFreeSize());
+        Assert.assertEquals(80, stats.getUsedSize());
+        Assert.assertEquals(1, stats.getFreeBlocksCount());
+        Assert.assertEquals(2, stats.getUsedBlocksCount());
+    }
+
 }

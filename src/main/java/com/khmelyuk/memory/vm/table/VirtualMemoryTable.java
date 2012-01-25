@@ -1,5 +1,7 @@
 package com.khmelyuk.memory.vm.table;
 
+import com.khmelyuk.memory.vm.VirtualMemoryStatistic;
+
 import java.util.Collection;
 
 /**
@@ -76,4 +78,10 @@ public interface VirtualMemoryTable {
      * @return true if size can be increased.
      */
     boolean canIncreaseSize(int size);
+
+    /**
+     * Fills the virtual memory statistic information.
+     * @param statistic the statistic to fill.
+     */
+    void fillStatisticInformation(VirtualMemoryStatistic statistic);
 }

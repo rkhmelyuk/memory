@@ -127,6 +127,17 @@ public class DynamicVirtualMemory implements VirtualMemory {
         this.freeEventListener = listener;
     }
 
+    public VirtualMemoryStatistic getStatistic() {
+        VirtualMemoryStatistic result = new VirtualMemoryStatistic();
+
+        result.setFreeBlocksCount(table.getFree().size());
+        result.setUsedBlocksCount(table.getUsed().size());
+        result.setFreeSize(table.getFreeMemorySize());
+        result.setUsedSize(table.getUsedMemorySize());
+
+        return result;
+    }
+
     // ----------------------------------------------------------
 
     public InputStream getInputStream() {

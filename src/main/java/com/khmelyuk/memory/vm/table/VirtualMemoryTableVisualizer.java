@@ -1,8 +1,6 @@
-package com.khmelyuk.memory.tools;
+package com.khmelyuk.memory.vm.table;
 
 import com.khmelyuk.memory.util.FormatUtil;
-import com.khmelyuk.memory.vm.table.Block;
-import com.khmelyuk.memory.vm.table.VirtualMemoryTable;
 
 /**
  * This tool to visualize the virtual memory table.

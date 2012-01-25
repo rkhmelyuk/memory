@@ -1,6 +1,7 @@
 package com.khmelyuk.memory.vm.table;
 
 import com.khmelyuk.memory.OutOfBoundException;
+import com.khmelyuk.memory.vm.VirtualMemoryStatistic;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -24,14 +25,20 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     private final LinkedList<TableBlock> used = new LinkedList<TableBlock>();
     private final LinkedList<TableBlock> free = new LinkedList<TableBlock>();
 
-    private AtomicInteger freeMemorySize;
-    private AtomicInteger usedMemorySize;
+    private final AtomicInteger freeMemorySize;
+    private final AtomicInteger usedMemorySize;
+
+    private final AtomicInteger totalAllocations;
+    private final AtomicInteger failedAllocations;
 
     public LinkedVirtualMemoryTable(int size) {
         free.add(new TableBlock(0, size));
 
         usedMemorySize = new AtomicInteger(0);
         freeMemorySize = new AtomicInteger(size);
+
+        totalAllocations = new AtomicInteger(0);
+        failedAllocations = new AtomicInteger(0);
     }
 
     public Collection<Block> getUsed() {
@@ -42,10 +49,22 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         return Collections.<Block>unmodifiableCollection(free);
     }
 
+    @Override
+    public void fillStatisticInformation(VirtualMemoryStatistic statistic) {
+        statistic.setFreeBlocksCount(free.size());
+        statistic.setUsedBlocksCount(used.size());
+        statistic.setFreeSize(freeMemorySize.get());
+        statistic.setUsedSize(usedMemorySize.get());
+        statistic.setTotalAllocations(totalAllocations.get());
+        statistic.setFailedAllocations(failedAllocations.get());
+    }
+
     public Block allocate(int size) {
         if (size < 0) {
             throw new OutOfBoundException("Size can't be negative: " + size);
         }
+
+        totalAllocations.incrementAndGet();
 
         final TableBlock freeBlock = getBlockToAllocate(size);
         if (freeBlock != null) {
@@ -74,6 +93,8 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
             return result;
         }
+        failedAllocations.incrementAndGet();
+
         return null;
     }
 

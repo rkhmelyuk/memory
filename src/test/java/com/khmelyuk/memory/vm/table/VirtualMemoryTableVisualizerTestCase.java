@@ -1,8 +1,5 @@
-package com.khmelyuk.memory.tools;
+package com.khmelyuk.memory.vm.table;
 
-import com.khmelyuk.memory.vm.table.Block;
-import com.khmelyuk.memory.vm.table.LinkedVirtualMemoryTable;
-import com.khmelyuk.memory.vm.table.VirtualMemoryTable;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -36,17 +36,6 @@ public class TablePerformanceTestCase {
         System.out.println("Linked: Avg. duration " + (total / N) + "ms");
     }
 
-    @Test
-    public void testQueueTablePerformance() {
-        testPerformance(new QueueVirtualMemoryTable(SIZE), 0);
-        long total = 0;
-        for (int i = 0; i < N; i++) {
-            total += testPerformance(new QueueVirtualMemoryTable(SIZE), i);
-        }
-
-        System.out.println("Queue: Avg. duration " + (total / N) + "ms");
-    }
-
     private static long testPerformance(final VirtualMemoryTable table, int n) {
         final int max = COUNT_COEFF * (n + 5);
         final int avgBlockSize = table.getFreeMemorySize() / max;

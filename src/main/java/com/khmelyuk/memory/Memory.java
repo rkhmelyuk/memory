@@ -3,8 +3,11 @@ package com.khmelyuk.memory;
 import com.khmelyuk.memory.space.FreeSpaceListener;
 import com.khmelyuk.memory.space.MemorySpace;
 import com.khmelyuk.memory.space.Space;
+import com.khmelyuk.memory.stats.MemoryStatistic;
+import com.khmelyuk.memory.util.FormatUtil;
 import com.khmelyuk.memory.vm.VirtualMemory;
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
+import com.khmelyuk.memory.vm.VirtualMemoryStatistic;
 
 /**
  * Represents a memory block.
@@ -86,5 +89,22 @@ public class Memory {
      */
     public int getUsedMemorySize() {
         return vm.getUsedSize();
+    }
+
+    public MemoryStatistic getStatistic() {
+        final VirtualMemoryStatistic vmStatistic = vm.getStatistic();
+        final MemoryStatistic statistic = new MemoryStatistic();
+
+        statistic.setFreeSize(vmStatistic.getFreeSize());
+        statistic.setUsedSize(vmStatistic.getUsedSize());
+        statistic.setFreeBlocksCount(vmStatistic.getFreeBlocksCount());
+        statistic.setUsedBlocksCount(vmStatistic.getUsedBlocksCount());
+
+        int totalAllocations = vmStatistic.getTotalAllocations();
+        int successAllocations = totalAllocations - vmStatistic.getFailedAllocations();
+        statistic.setSuccessAllocations(successAllocations);
+        statistic.setSuccessAllocationsPercentage(FormatUtil.getPercent(successAllocations, totalAllocations));
+
+        return statistic;
     }
 }

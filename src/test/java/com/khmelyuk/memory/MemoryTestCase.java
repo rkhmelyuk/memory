@@ -1,6 +1,8 @@
 package com.khmelyuk.memory;
 
 import com.khmelyuk.memory.space.MemorySpace;
+import com.khmelyuk.memory.space.Space;
+import com.khmelyuk.memory.stats.MemoryStatistic;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,6 +15,7 @@ public class MemoryTestCase {
 
     @Test
     public void testAlloc() {
+
         FixedMemoryAllocator allocator = new FixedMemoryAllocator();
         Memory memory = allocator.allocate(20 * Memory.KB);
 
@@ -186,5 +189,36 @@ public class MemoryTestCase {
         Assert.assertEquals(0, space3.getAddress());
         Assert.assertEquals(10 * Memory.KB, memory.getFreeMemorySize());
         Assert.assertEquals(10 * Memory.KB, memory.getUsedMemorySize());
+    }
+
+    @Test
+    public void testGetStatistic() {
+        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
+
+        Memory memory = allocator.allocate(20 * Memory.KB);
+        Assert.assertNotNull(memory);
+
+        Space space = memory.allocate(20 * Memory.KB);
+        Assert.assertNotNull(space);
+
+        MemoryStatistic stats = memory.getStatistic();
+
+        Assert.assertEquals(0, stats.getFreeSize());
+        Assert.assertEquals(20 * Memory.KB, stats.getUsedSize());
+        Assert.assertEquals(0, stats.getFreeBlocksCount());
+        Assert.assertEquals(1, stats.getUsedBlocksCount());
+        Assert.assertEquals(1, stats.getSuccessAllocations());
+
+        stats.print();
+
+        space.free();
+
+        stats = memory.getStatistic();
+
+        Assert.assertEquals(20 * Memory.KB, stats.getFreeSize());
+        Assert.assertEquals(0, stats.getUsedSize());
+        Assert.assertEquals(1, stats.getFreeBlocksCount());
+        Assert.assertEquals(0, stats.getUsedBlocksCount());
+        Assert.assertEquals(1, stats.getSuccessAllocations());
     }
 }

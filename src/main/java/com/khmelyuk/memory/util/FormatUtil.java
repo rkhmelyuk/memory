@@ -35,7 +35,7 @@ public class FormatUtil {
         return round(new BigDecimal(m));
     }
 
-    public static BigDecimal getPercent(int num, int totalNum) {
+    public static BigDecimal getPercent(long num, long totalNum) {
         if (totalNum == 0 || num == 0) {
             return BigDecimal.ZERO;
         }

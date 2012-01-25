@@ -41,16 +41,6 @@ public class ConcurrencyTablePerformanceTestCase {
         System.out.println("Linked: Avg. duration " + (total / N) + "ms");
     }
 
-    @Test
-    public void testQueueTablePerformance() throws Exception {
-        testPerformance(new QueueVirtualMemoryTable(SIZE), 0, THREAD_NUM);
-        long total = 0;
-        for (int i = 0; i < N; i++) {
-            total += testPerformance(new QueueVirtualMemoryTable(SIZE), i, THREAD_NUM);
-        }
-
-        System.out.println("Queue: Avg. duration " + (total / N) + "ms");
-    }
 
     @Test
     public void testLinkedTableQuality() throws Exception {
@@ -61,17 +51,6 @@ public class ConcurrencyTablePerformanceTestCase {
         }
 
         System.out.println("Linked: Avg. nulls percentage " + Math.round(total / N) + "%");
-    }
-
-    @Test
-    public void testQueueTableQuality() throws Exception {
-        testQuality(new QueueVirtualMemoryTable(SIZE), 0, THREAD_NUM);
-        float total = 0;
-        for (int i = 0; i < N; i++) {
-            total += testQuality(new QueueVirtualMemoryTable(SIZE), i, THREAD_NUM);
-        }
-
-        System.out.println("Queue: Avg. nulls percentage " + Math.round(total / N) + "%");
     }
 
     private static long testPerformance(final VirtualMemoryTable table, int n, int threadsNum) throws Exception {

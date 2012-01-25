@@ -71,6 +71,12 @@ public class FixedVirtualMemory implements VirtualMemory {
         this.freeEventListener = listener;
     }
 
+    public VirtualMemoryStatistic getStatistic() {
+        VirtualMemoryStatistic statistic = new VirtualMemoryStatistic();
+        table.fillStatisticInformation(statistic);
+        return statistic;
+    }
+
     // ---------------------------------------------- Read/write support
 
     public InputStream getInputStream() {
