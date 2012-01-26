@@ -3,7 +3,6 @@ package com.khmelyuk.memory;
 import com.khmelyuk.memory.space.FreeSpaceListener;
 import com.khmelyuk.memory.space.MemorySpace;
 import com.khmelyuk.memory.space.Space;
-import com.khmelyuk.memory.stats.MemoryStatistic;
 import com.khmelyuk.memory.util.FormatUtil;
 import com.khmelyuk.memory.vm.VirtualMemory;
 import com.khmelyuk.memory.vm.VirtualMemoryBlock;
@@ -18,7 +17,7 @@ public class Memory {
 
     public static final int KB = 1024;
     public static final int MB = KB * KB;
-    public static final int GB = MB * MB;
+    public static final int GB = KB * MB;
 
     private final VirtualMemory vm;
     private final FreeSpaceListener freeSpaceListener;

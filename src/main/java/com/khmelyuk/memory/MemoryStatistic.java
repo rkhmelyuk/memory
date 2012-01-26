@@ -1,4 +1,4 @@
-package com.khmelyuk.memory.stats;
+package com.khmelyuk.memory;
 
 import com.khmelyuk.memory.util.FormatUtil;
 

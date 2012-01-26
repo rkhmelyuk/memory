@@ -2,7 +2,6 @@ package com.khmelyuk.memory;
 
 import com.khmelyuk.memory.space.MemorySpace;
 import com.khmelyuk.memory.space.Space;
-import com.khmelyuk.memory.stats.MemoryStatistic;
 import org.junit.Assert;
 import org.junit.Test;
 
