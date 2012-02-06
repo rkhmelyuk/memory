@@ -31,7 +31,7 @@ public class ReadOnlySpace implements Space {
     }
 
     public void free() {
-        space.free();
+        throw new WriteNotAllowedException();
     }
 
     @Override
