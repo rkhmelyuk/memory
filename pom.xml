@@ -11,6 +11,22 @@
 
     <name>Virtual Memory</name>
 
+    <distributionManagement>
+        <repository>
+            <id>maven.khmelyuk.com</id>
+            <name>Repo on maven.khmelyuk.com</name>
+            <url>scp://maven.khmelyuk.com/home/maven/repo</url>
+        </repository>
+    </distributionManagement>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <repositories>
         <repository>
             <id>central</id>
