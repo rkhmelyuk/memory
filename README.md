@@ -2,100 +2,45 @@
 This is a simple implementation fo virtual memory on Java. Virtual memory may be useful when need to allocate once a large
 amount of memory buffer and work with it. It is possible to allocate spaces from this memory buffer, work with it and free.
 
-## Virtual Memory
-Library currently supports two types of virtual memory: memory with fixed and dynamic sizes. Both types are represented via
-simple class `Memory`. Different allocators used to allocate memory.
+Library supports allocation fixed and dynamic memory blocks. It's also possible to work with read-only and transactional spaces,
+different storage types (byte array, byte buffer).
 
-### Fixed Memory
-Fixed memory is represented by `FixedVirtualMemory` and can be allocated using 'FixedMemoryAllocator'. Size of fixed memory can't be changed.
+### Example
+A simple example, where two memories are allocated: a fixed size 20KB memory and
+a dynamic memory with a initial size 1MB and max size 5MB and backed by file user.db.
 
+    // setup cache and records memory
     FixedMemoryAllocator allocator = new FixedMemoryAllocator();
     Memory memory = allocator.allocate(20 * Memory.MB);
+    Space cacheSpace = memory.allocate(10 * Memory.KB);
+    Space recordSpace = memory.allocate(10 * Memory.KB);
 
-### Dynamic Memory
-Dynamic memory is represented by `DynamicVirtualMemory` and can be allocating using `DynamicMemoryAllocator`.
-It is required to set an initial and max size of virtual memory when allocate memory.
+    setCacheMemory(cacheSpace);
+    setRecordDb(recordSpace);
 
-    final int initSize    = 20 * Memory.MB;
-    final int maxSize     = 80 * Memory.MB;
-    final int growthSize  = 10 * Memory.MB;
+    // setup user database memory
+    FileMemoryAllocator allocator = new FileMemoryAllocator();
+    File dbFile = new File("user.db");
+    Memory memory = allocator.allocate(dbFile, Memory.MB, 5 * Memory.MB);
+    setUserDatabaseMemory(memory);
 
-    DynamicMemoryAllocator allocator = new DynamicMemoryAllocator();
-    Memory memory = allocator.allocate(initSize, maxSize, growthSize);
 
-### Spaces
-`Memory` doesn't provide direct access to read/write a memory. Instead it is required to allocate a slice of memory first and work with it.
-This slice of memory is called a Space and represented by `Space` interface. Space allows to read/write strings, objects and bytes to the memory.
-It also gives a way to be sure the same slice of memory can't be allocated again, and read/written without a reference to appropriate Space object.
+### Usage
+Current library version is 0.1, and it's possible to [download it](http://maven.khmelyuk.com/repo/com/khmelyuk/memory/0.1/memory-0.1.jar).
+Also, it's possible to use it as Maven dependency:
 
-    Memory memory = allocator.allocate(20 * Memory.KB);
-    Space space = memory.allocate(10 * Memory.KB);
-
-    space.write(user);
-    processData(space);
-
-Space data can be easily read/written byte-by-byte using `InputStream` and `OutputStream`:
-
-    space.getOutputStream.write(buffer);
-    ...
-    processData(space.getInputStream());
-
-After space is used and is not needed anymore, it can be freed easily. After this slice of memory can be allocated again.
-
-    space.free();
-
-For debugging purposes, it is possible to dump a space content to the output stream, like file, console, or network.
-
-    space.dump(out);
-
-Another useful function is built on top of dump. It is called `copy()` and creates a new space in the memory and copy the content from this space.
-
-    Space copySpace = space.copy(); // copySpace represents another location in the memory
-
-#### Read-only space
-It's possible also to get a read-only version of the space. Read-only version is just an wrapper for a regular space,
-that allows to read data from memory, but not to write. Exception is thrown when try to write a data or free the space.
-
-    Space readOnlySpace = space.readOnly();
-
-    readOnlySpace.read(...);    // is ak
-    readOnlySpace.write(...);   // will throw an exception
-
-Read-only space represented by `ReadOnlySpace`.
-
-#### Transactional space
-Another important feature of spaces is support of transactions. When transaction is started, a snapshot of space is
-created (using `Space.copy()`) and user continuous to work with it till this transaction is committed or rolled back.
-Any changes to the space will be not available for other users of the space. On commit, committed data overrides old data.
-Transactional space has a pure implementation, and doesn't support an optimistic transaction currently.
-
-    TransactionalSpace tSpace = space.transactional();   // get a transactional space
-    tSpace.start(); // start a transaction
-    try {
+    <repositories>
         ...
-        tSpace.commit(); // commit a transaction
-    }
-    catch (Exception e) {
-        tSpace.rollback(); // rollback a transaction
-    }
+         <repository>
+             <id>maven.khmelyuk.com</id>
+             <url>http://maven.khmelyuk.com/repo/</url>
+         </repository>
+    </repositories>
 
-Before the transaction is started and after it was ended, any changes to the original space will be also visible from transactional space.
-Transactional space represented by `CopyTransactionalSpace`.
-
-### Storage
-As of version 0.1, the default storage is an array of bytes, represented by `ByteArrayStorage`.
-In the next version, there will be a way to use another memory storage, like `ByteBufferStorage`.
-
-## Concurrency
-This library is written to work correctly in multi-threaded environment.
-The instance of `Memory` can be used in multiple threads to allocate and free spaces.
-`Space` itself is built on top of `VirtualMemoryBlock`, which is allocated by `VirtualMemoryTable` instance.
-`VirtualMemoryTable` uses a different lock-based techniques to avoid allocating the same memory space twice.
-
-And `VirtualMemoryBlock` uses locks to read/write data. Locks also used to dump the space, thus to avoid mess in the data.
-Spaces also support locking when read/write data using Input/OutputStreams.
-
-There are tests for checking the work of library in multi-threaded environment:
-
-* [ConcurrencyTestCase](https://github.com/rkhmelyuk/memory/blob/master/src/test/java/com/khmelyuk/memory/ConcurrencyTestCase.java)
-* [ConcurrencyTablePrerformanceTestCase](https://github.com/rkhmelyuk/memory/blob/master/src/test/java/com/khmelyuk/memory/vm/table/ConcurrencyTablePerformanceTestCase.java)
+    <dependencies>
+        <dependency>
+            <groupId>com.khmelyuk</groupId>
+            <artifactId>memory</artifactId>
+            <version>0.1</version>
+        </dependency>
+    </dependencies>
