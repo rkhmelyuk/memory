@@ -1,9 +1,11 @@
 ## Memory
-This is a simple implementation fo virtual memory on Java. Virtual memory may be useful when need to allocate once a large
-amount of memory buffer and work with it. It is possible to allocate spaces from this memory buffer, work with it and free.
+This is a simple implementation fo virtual memory on Java. This may be useful when need to allocate once a large
+amount of memory buffer and work with it.
 
 Library supports allocation fixed and dynamic memory blocks. It's also possible to work with read-only and transactional spaces,
 different storage types (byte array, byte buffer).
+
+*Read [documentation](https://github.com/rkhmelyuk/memory/wiki) for more information and examples*.
 
 ### Example
 A simple example, where two memories are allocated: a fixed size 20KB memory and
