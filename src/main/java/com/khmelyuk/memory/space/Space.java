@@ -84,6 +84,42 @@ public interface Space {
     String readString();
 
     /**
+     * Writes the data to the space.
+     *
+     * @param data the data to write to the space.
+     */
+    void write(byte[] data);
+
+    /**
+     * Writes the data to the space starting from {@code offset}.
+     * Offset is the position in the space, not in the input data.
+     *
+     * @param data        the data as byte array.
+     * @param spaceOffset the space offset to start write from.
+     * @param length      the length of data to write.
+     */
+    void write(byte[] data, int spaceOffset, int length);
+
+    /**
+     * Reads the data from the space.
+     *
+     * @param buffer the buffer to read data into.
+     * @return the number of read bytes.
+     */
+    int read(byte[] buffer);
+
+    /**
+     * Reads the data from the space from the specified offset.
+     * Offset is the position in the space, not in the input data.
+     *
+     * @param buffer      the buffer to read data into.
+     * @param spaceOffset the space offset to start read from.
+     * @param length      the number of bytes to read from space.
+     * @return the number of read bytes.
+     */
+    int read(byte[] buffer, int spaceOffset, int length);
+
+    /**
      * Returns the read only version of this space.
      *
      * @return the read only version of this space.

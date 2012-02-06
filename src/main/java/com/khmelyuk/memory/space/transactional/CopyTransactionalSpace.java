@@ -87,6 +87,26 @@ public class CopyTransactionalSpace implements TransactionalSpace {
     }
 
     @Override
+    public void write(byte[] data) {
+        currentSpace.write(data);
+    }
+
+    @Override
+    public void write(byte[] data, int spaceOffset, int length) {
+        currentSpace.write(data, spaceOffset, length);
+    }
+
+    @Override
+    public int read(byte[] buffer) {
+        return currentSpace.read(buffer);
+    }
+
+    @Override
+    public int read(byte[] buffer, int spaceOffset, int length) {
+        return currentSpace.read(buffer, spaceOffset, length);
+    }
+
+    @Override
     public Space readOnly() {
         return space.readOnly();
     }

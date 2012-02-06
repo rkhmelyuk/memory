@@ -60,6 +60,26 @@ public class ReadOnlySpace implements Space {
         throw new WriteNotAllowedException();
     }
 
+    @Override
+    public void write(byte[] data) {
+        throw new WriteNotAllowedException();
+    }
+
+    @Override
+    public void write(byte[] data, int spaceOffset, int length) {
+        throw new WriteNotAllowedException();
+    }
+
+    @Override
+    public int read(byte[] buffer) {
+        return space.read(buffer);
+    }
+
+    @Override
+    public int read(byte[] buffer, int spaceOffset, int length) {
+        return space.read(buffer, spaceOffset, length);
+    }
+
     public Space readOnly() {
         return this;
     }

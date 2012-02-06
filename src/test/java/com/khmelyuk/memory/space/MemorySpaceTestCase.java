@@ -11,6 +11,9 @@ import org.junit.Test;
 
 import java.io.Serializable;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+
 /**
  * Tests for memory Spaces
  *
@@ -51,6 +54,35 @@ public class MemorySpaceTestCase {
     }
 
     @Test
+    public void testReadWrite_Data() {
+        MemorySpace s = memory.allocate(2 * Memory.KB);
+        byte[] data = {1, 2, 3, 4, 5, 6, 7, 11, 12, 14};
+
+        s.write(data);
+
+        byte[] buffer = new byte[data.length];
+        Assert.assertThat(s.read(buffer), equalTo(data.length));
+        Assert.assertThat(buffer, equalTo(data));
+    }
+
+    @Test
+    public void testReadWrite_Data_WithOffset() {
+        MemorySpace s = memory.allocate(2 * Memory.KB);
+        byte[] data = {1, 2, 3, 4, 5, 6, 7, 11, 12, 14};
+
+        s.write(data, 10, 5);
+
+        byte[] buffer = new byte[data.length];
+        Assert.assertThat(s.read(buffer, 10, 5), equalTo(5));
+        Assert.assertThat(buffer[0], equalTo(data[0]));
+        Assert.assertThat(buffer[1], equalTo(data[1]));
+        Assert.assertThat(buffer[2], equalTo(data[2]));
+        Assert.assertThat(buffer[3], equalTo(data[3]));
+        Assert.assertThat(buffer[4], equalTo(data[4]));
+        Assert.assertThat(buffer[5], not(equalTo(data[5])));
+    }
+
+    @Test
     public void testReadWrite_UDT() {
         MemorySpace s = memory.allocate(2 * Memory.KB);
 
@@ -72,7 +104,7 @@ public class MemorySpaceTestCase {
     public void testTransactional() {
         Space s = memory.allocate(2 * Memory.KB);
         TransactionalSpace ts = s.transactional();
-        
+
         Assert.assertNotNull(ts);
         Assert.assertTrue(ts instanceof CopyTransactionalSpace);
     }

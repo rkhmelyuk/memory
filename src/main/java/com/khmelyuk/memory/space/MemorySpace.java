@@ -70,6 +70,26 @@ public class MemorySpace implements Space {
         return block.readString();
     }
 
+    @Override
+    public void write(byte[] data) {
+        block.write(data);
+    }
+
+    @Override
+    public void write(byte[] data, int spaceOffset, int length) {
+        block.write(data, spaceOffset, length);
+    }
+
+    @Override
+    public int read(byte[] buffer) {
+        return block.read(buffer);
+    }
+
+    @Override
+    public int read(byte[] buffer, int spaceOffset, int length) {
+        return block.read(buffer, spaceOffset, length);
+    }
+
     public Space readOnly() {
         return new ReadOnlySpace(this);
     }
