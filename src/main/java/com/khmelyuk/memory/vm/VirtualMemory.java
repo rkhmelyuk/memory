@@ -15,6 +15,7 @@ public interface VirtualMemory {
 
     /**
      * Gets the virtual memory statistic information.
+     *
      * @return the virtual memory statistic information.
      */
     VirtualMemoryStatistic getStatistic();
@@ -25,6 +26,13 @@ public interface VirtualMemory {
      * @return the virtual memory size.
      */
     int size();
+
+    /**
+     * Gets the max size for virtual memory.
+     *
+     * @return the virtual memory max size.
+     */
+    int getMaxSize();
 
     /**
      * Get how many bytes is free for use.
@@ -63,6 +71,7 @@ public interface VirtualMemory {
 
     /**
      * Sets the free memory listener.
+     *
      * @param listener the listener to set.
      */
     void setFreeEventListener(FreeEventListener listener);

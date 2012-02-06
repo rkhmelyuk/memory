@@ -44,6 +44,10 @@ public class DynamicVirtualMemory implements VirtualMemory {
         return size;
     }
 
+    public int getMaxSize() {
+        return maxSize;
+    }
+
     public int getFreeSize() {
         return table.getFreeMemorySize();
     }

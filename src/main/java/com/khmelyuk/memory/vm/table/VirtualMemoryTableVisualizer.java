@@ -53,7 +53,7 @@ public class VirtualMemoryTableVisualizer {
         int totalSize = table.getFreeMemorySize() + table.getUsedMemorySize();
         assert blockSize > 0 : "Block size can't be 0 or less.";
 
-        int len = (int) Math.ceil(totalSize / blockSize);
+        int len = (int) Math.ceil((double) totalSize / blockSize);
         boolean[] data = new boolean[len];
         for (Block each : table.getUsed()) {
             int startAddress = calcAddress(blockSize, each.getAddress());
@@ -67,7 +67,7 @@ public class VirtualMemoryTableVisualizer {
     }
 
     private int calcAddress(int blockSize, int address) {
-        return (int) Math.ceil(address / blockSize);
+        return (int) Math.ceil((double) address / blockSize);
     }
 
 }

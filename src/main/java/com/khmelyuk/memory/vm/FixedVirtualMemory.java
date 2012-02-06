@@ -32,6 +32,10 @@ public class FixedVirtualMemory implements VirtualMemory {
         return size;
     }
 
+    public int getMaxSize() {
+        return size;
+    }
+
     public int getFreeSize() {
         return table.getFreeMemorySize();
     }
