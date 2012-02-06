@@ -1,5 +1,4 @@
-## Memory
-This is a simple implementation fo virtual memory on Java. This may be useful when need to allocate once a large
+Memory is a library that implementations a basic virtual memory on Java. This may be useful when need to allocate once a large
 amount of memory buffer and work with it.
 
 Library supports allocation fixed and dynamic memory blocks. It's also possible to work with read-only and transactional spaces,
