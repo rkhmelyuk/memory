@@ -15,21 +15,6 @@ public class ConcurrencyTablePerformanceTestCase {
     static final int COUNT_COEFF = 2000;
     static final int THREAD_NUM = 3;
 
-    /*@Test
-    public void testLinkedTablePerformance() throws Exception {
-        testPerformance(new LinkedVirtualMemoryTable(SIZE), 0, THREAD_NUM);
-        long total = 0;
-        for (int i = 0; i < N; i++) {
-            VirtualMemoryTable table = new LinkedVirtualMemoryTable(SIZE);
-            total += testPerformance(table, i, THREAD_NUM);
-
-            new VirtualMemoryTableVisualizer().printUsage(table, 5 * Memory.KB);
-            break;
-        }
-
-        System.out.println("Linked: Avg. duration " + (total / N) + "ms");
-    }*/
-
     @Test
     public void testLinkedTablePerformance() throws Exception {
         testPerformance(new LinkedVirtualMemoryTable(SIZE), 0, THREAD_NUM);

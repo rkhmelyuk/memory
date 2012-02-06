@@ -14,7 +14,6 @@ import org.junit.Test;
  */
 public class TransactionalMemorySpaceTestCase {
 
-
     private Memory memory;
 
     @Before

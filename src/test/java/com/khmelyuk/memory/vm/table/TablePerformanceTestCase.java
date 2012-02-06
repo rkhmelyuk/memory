@@ -17,12 +17,9 @@ public class TablePerformanceTestCase {
     @Test
     public void test2LinkedTablePerformance() {
         testPerformance(new LinkedVirtualMemoryTable(SIZE), 0);
-        long total = 0;
         for (int i = 0; i < N; i++) {
-            total += testPerformance(new LinkedVirtualMemoryTable(SIZE), i);
+            testPerformance(new LinkedVirtualMemoryTable(SIZE), i);
         }
-
-        //System.out.println("init: Avg. duration " + (total / N) + "ms");
     }
 
     @Test

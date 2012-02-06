@@ -28,12 +28,9 @@ public class VMPerformanceTestCase {
     @Test
     public void testInitPerformance() {
         testPerformance(createFixedVirtualMemory(), 0);
-        long total = 0;
         for (int i = 0; i < N; i++) {
-            total += testPerformance(createFixedVirtualMemory(), i);
+            testPerformance(createFixedVirtualMemory(), i);
         }
-
-        //System.out.println("init: Avg. duration " + (total / N) + "ms");
     }
 
     @Test
