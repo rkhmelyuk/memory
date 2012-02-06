@@ -44,40 +44,43 @@ After space is used and is not needed anymore, it can be freed easily. After thi
 
     space.free();
 
-For debugging purposes, it is possible to dump the space content to output stream, like console, file or even network.
+For debugging purposes, it is possible to dump a space content to the output stream, like file, console, or network.
 
     space.dump(out);
 
-On top of dump operation built another useful function called copy, which creates a new space in the memory and copy the content from this space.
+Another useful function is built on top of dump. It is called `copy()` and creates a new space in the memory and copy the content from this space.
 
     Space copySpace = space.copy(); // copySpace represents another location in the memory
 
 #### Read-only space
 It's possible also to get a read-only version of the space. Read-only version is just an wrapper for a regular space,
-that allows to read data from memory, but not to write. Exception is thrown on a try to write a data.
-It's also impossible to free a read-only space.
+that allows to read data from memory, but not to write. Exception is thrown when try to write a data or free the space.
 
     Space readOnlySpace = space.readOnly();
 
     readOnlySpace.read(...);    // is ak
     readOnlySpace.write(...);   // will throw an exception
 
+Read-only space represented by `ReadOnlySpace`.
 
 #### Transactional space
-Another important feature of space is support for transactions. When transaction is started, a snapshot of space is
+Another important feature of spaces is support of transactions. When transaction is started, a snapshot of space is
 created (using `Space.copy()`) and user continuous to work with it till this transaction is committed or rolled back.
 Any changes to the space will be not available for other users of the space. On commit, committed data overrides old data.
 Transactional space has a pure implementation, and doesn't support an optimistic transaction currently.
 
-    TransactionalSpace tSpace = space.transactional();
-    tSpace.start();
+    TransactionalSpace tSpace = space.transactional();   // get a transactional space
+    tSpace.start(); // start a transaction
     try {
         ...
-        tSpace.commit();
+        tSpace.commit(); // commit a transaction
     }
     catch (Exception e) {
-        tSpace.rollback();
+        tSpace.rollback(); // rollback a transaction
     }
+
+Before the transaction is started and after it was ended, any changes to the original space will be also visible from transactional space.
+Transactional space represented by `CopyTransactionalSpace`.
 
 ### Storage
 As of version 0.1, the default storage is an array of bytes, represented by `ByteArrayStorage`.
@@ -85,9 +88,14 @@ In the next version, there will be a way to use another memory storage, like `By
 
 ## Concurrency
 This library is written to work correctly in multi-threaded environment.
-The instance of `Memory` can be used in different threads to allocate and free spaces. Space is built on top of `VirtualMemoryBlock`, which is allocated by `VirtualMemoryTable` instance.
+The instance of `Memory` can be used in multiple threads to allocate and free spaces.
+`Space` itself is built on top of `VirtualMemoryBlock`, which is allocated by `VirtualMemoryTable` instance.
 `VirtualMemoryTable` uses a different lock-based techniques to avoid allocating the same memory space twice.
-And `VirtualMemoryBlock` uses a locks on read/write of data. Locks also used on space dump, to avoid mess in the data.
-`Space` also supports locking on for read/write operations of Input/OutputStreams.
 
-There are tests for checking the work of library in multi-threaded environment: `ConcurrencyTestCase` and `ConcurrencyTablePrerformanceTestCase`.
+And `VirtualMemoryBlock` uses locks to read/write data. Locks also used to dump the space, thus to avoid mess in the data.
+Spaces also support locking when read/write data using Input/OutputStreams.
+
+There are tests for checking the work of library in multi-threaded environment:
+
+* [ConcurrencyTestCase](https://github.com/rkhmelyuk/memory/blob/master/src/test/java/com/khmelyuk/memory/ConcurrencyTestCase.java)
+* [ConcurrencyTablePrerformanceTestCase](https://github.com/rkhmelyuk/memory/blob/master/src/test/java/com/khmelyuk/memory/vm/table/ConcurrencyTablePerformanceTestCase.java)
