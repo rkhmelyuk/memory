@@ -5,7 +5,7 @@ amount of memory buffer and work with it.
 Library supports allocation fixed and dynamic memory blocks. It's also possible to work with read-only and transactional spaces,
 different storage types (byte array, byte buffer).
 
-*Read [documentation](https://github.com/rkhmelyuk/memory/wiki) for more information and examples*.
+**Read [documentation](https://github.com/rkhmelyuk/memory/wiki) for more information and examples**.
 
 ### Example
 A simple example, where two memories are allocated: a fixed size 20KB memory and
