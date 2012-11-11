@@ -2,6 +2,7 @@ package com.khmelyuk.memory.space;
 
 import com.khmelyuk.memory.FixedMemoryAllocator;
 import com.khmelyuk.memory.Memory;
+import com.khmelyuk.memory.MemorySize;
 import com.khmelyuk.memory.space.transactional.CopyTransactionalSpace;
 import com.khmelyuk.memory.space.transactional.TransactionalSpace;
 import com.khmelyuk.memory.space.transactional.WriteNotAllowedException;
@@ -27,7 +28,7 @@ public class ReadOnlySpaceTestCase {
     @Before
     public void setUp() {
         FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-        memory = allocator.allocate(20 * Memory.KB);
+        memory = allocator.allocate(MemorySize.kilobytes(20));
     }
 
     @After
@@ -37,7 +38,7 @@ public class ReadOnlySpaceTestCase {
 
     @Test
     public void testAddressAndSize() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
         Space ro = s.readOnly();
 
         Assert.assertEquals(s.getAddress(), ro.getAddress());
@@ -46,7 +47,7 @@ public class ReadOnlySpaceTestCase {
 
     @Test
     public void testGetBlock() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
         Space ro = s.readOnly();
 
         Assert.assertSame(s.getBlock(), ro.getBlock());
@@ -54,7 +55,7 @@ public class ReadOnlySpaceTestCase {
 
     @Test
     public void testReadWrite_String() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
         s.write("hello world");
 
         Space ro = s.readOnly();
@@ -63,7 +64,7 @@ public class ReadOnlySpaceTestCase {
 
     @Test
     public void testReadWrite_Num() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
 
         s.write(12323);
 
@@ -75,7 +76,7 @@ public class ReadOnlySpaceTestCase {
 
     @Test
     public void testReadOnly() {
-        Space s = memory.allocate(2 * Memory.KB);
+        Space s = memory.allocate(MemorySize.kilobytes(2));
         Space ro = s.readOnly();
 
         Assert.assertNotNull(ro);
@@ -84,7 +85,7 @@ public class ReadOnlySpaceTestCase {
 
     @Test(expected = WriteNotAllowedException.class)
     public void testWriteStringFails() {
-        Space s = memory.allocate(2 * Memory.KB);
+        Space s = memory.allocate(MemorySize.kilobytes(2));
         Space ro = s.readOnly();
 
         ro.write("Hello");
@@ -92,7 +93,7 @@ public class ReadOnlySpaceTestCase {
 
     @Test(expected = WriteNotAllowedException.class)
     public void testWriteObjectFails() {
-        Space s = memory.allocate(2 * Memory.KB);
+        Space s = memory.allocate(MemorySize.kilobytes(2));
         Space ro = s.readOnly();
 
         ro.write(new User());
@@ -100,7 +101,7 @@ public class ReadOnlySpaceTestCase {
 
     @Test(expected = WriteNotAllowedException.class)
     public void testReadWrite_WriteDataFails() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
         Space roSpace = s.readOnly();
 
         roSpace.write(new byte[]{1, 2, 3, 4, 5, 6, 7, 11, 12, 14});
@@ -108,7 +109,7 @@ public class ReadOnlySpaceTestCase {
 
     @Test(expected = WriteNotAllowedException.class)
     public void testReadWrite_WriteDataWithOffsetFails() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
         Space roSpace = s.readOnly();
 
         roSpace.write(new byte[]{1, 2, 3, 4, 5, 6, 7, 11, 12, 14}, 5, 10);
@@ -116,7 +117,7 @@ public class ReadOnlySpaceTestCase {
 
     @Test
     public void testReadWrite_ReadData() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
         byte[] data = {1, 2, 3, 4, 5, 6, 7, 11, 12, 14};
 
         s.write(data);
@@ -128,7 +129,7 @@ public class ReadOnlySpaceTestCase {
 
     @Test
     public void testReadWrite_ReadDataWithOffset() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
         byte[] data = {1, 2, 3, 4, 5, 6, 7, 11, 12, 14};
 
         s.write(data, 10, 5);
@@ -145,7 +146,7 @@ public class ReadOnlySpaceTestCase {
 
     @Test
     public void testReadWrite_Data_WithOffset() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
         byte[] data = {1, 2, 3, 4, 5, 6, 7, 11, 12, 14};
 
         s.write(data, 10, 5);
@@ -162,7 +163,7 @@ public class ReadOnlySpaceTestCase {
 
     @Test
     public void testTransactional() {
-        Space s = memory.allocate(2 * Memory.KB);
+        Space s = memory.allocate(MemorySize.kilobytes(2));
         TransactionalSpace ts = s.readOnly().transactional();
 
         Assert.assertNotNull(ts);

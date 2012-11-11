@@ -1,6 +1,7 @@
 package com.khmelyuk.memory.util;
 
-import com.khmelyuk.memory.Memory;
+import com.khmelyuk.memory.MemorySize;
+import com.khmelyuk.memory.SizeUnit;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -14,13 +15,28 @@ public class FormatUtil {
 
     public static final BigDecimal ONE_HUNDRED = new BigDecimal(100);
 
-    public static String sizeAsString(int size) {
-        if (size >= Memory.KB) {
-            return getDivision(size, Memory.KB).toString() + "KB";
-        } else if (size >= Memory.MB) {
-            return getDivision(size, Memory.MB).toString() + "MB";
-        } else if (size >= Memory.GB) {
-            return getDivision(size, Memory.GB).toString() + "GB";
+    /**
+     * Represent the size as string with the best fit unit.
+     *
+     * @see #sizeAsString(int)
+     */
+    public static String sizeAsString(MemorySize size) {
+        return sizeAsString(size.getBytes());
+    }
+
+    /**
+     * Represent the size as string with the best fit unit.
+     *
+     * @param size the size to convert to string.
+     * @return the string that represents size.
+     */
+    private static String sizeAsString(int size) {
+        if (size >= SizeUnit.KB.bytes()) {
+            return getDivision(size, SizeUnit.KB.bytes()).toString() + "KB";
+        } else if (size >= SizeUnit.MB.bytes()) {
+            return getDivision(size, SizeUnit.MB.bytes()).toString() + "MB";
+        } else if (size >= SizeUnit.GB.bytes()) {
+            return getDivision(size, SizeUnit.GB.bytes()).toString() + "GB";
         }
         return String.valueOf(size);
     }

@@ -82,6 +82,7 @@ public class DynamicStorage implements Storage {
         size = newSize;
     }
 
+    @Override
     public void write(byte[] data) throws OutOfBoundException {
         int dataLength = data.length;
         if (dataLength > size) {
@@ -104,10 +105,12 @@ public class DynamicStorage implements Storage {
         }
     }
 
+    @Override
     public void write(byte[] data, int offset) throws OutOfBoundException {
         write(data, offset, data.length);
     }
 
+    @Override
     public void write(byte[] data, int offset, int length) throws OutOfBoundException {
         // TODO - what about just calling write(data, offset, 0, length)?
 
@@ -174,6 +177,7 @@ public class DynamicStorage implements Storage {
         }
     }
 
+    @Override
     public int read(byte[] data) throws OutOfBoundException {
         int dataLength = data.length;
         if (dataLength > size) {
@@ -200,6 +204,7 @@ public class DynamicStorage implements Storage {
         return read != 0 ? read : -1;
     }
 
+    @Override
     public int read(byte[] data, int offset, int length) {
         // TODO - what about just calling read(data, offset, 0, length)?
         int dataLength = length;
@@ -279,6 +284,7 @@ public class DynamicStorage implements Storage {
         return read != 0 ? read : -1;
     }
 
+    @Override
     public void write(byte data, int offset) throws OutOfBoundException {
         if (offset >= size) {
             throw new OutOfBoundException();
@@ -292,6 +298,7 @@ public class DynamicStorage implements Storage {
         }
     }
 
+    @Override
     public byte read(int offset) {
         if (offset >= size) {
             return -1;

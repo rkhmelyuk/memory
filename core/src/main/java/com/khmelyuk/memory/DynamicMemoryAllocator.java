@@ -40,11 +40,36 @@ public class DynamicMemoryAllocator {
     /**
      * Allocates a memory with specified size, and sets the max size the memory can grow to.
      *
+     * @param size           the memory size.
+     * @param maxSize        the max size for the memory
+     * @param growthStepSize the size of the memory growth step.
+     * @return the memory with specified size.
+     * @see DynamicMemoryAllocator#allocate(int, int, int)
+     */
+    public Memory allocate(MemorySize size, MemorySize maxSize, MemorySize growthStepSize) {
+        return allocate(size.getBytes(), maxSize.getBytes(), growthStepSize.getBytes());
+    }
+
+    /**
+     * Allocates a memory with specified size, and sets the max size the memory can grow to.
+     *
      * @param size    the memory size.
      * @param maxSize the max size for the memory
      * @return the memory with specified size.
      */
     public Memory allocate(int size, int maxSize) {
         return allocate(size, maxSize, size);
+    }
+
+    /**
+     * Allocates a memory with specified size, and sets the max size the memory can grow to.
+     *
+     * @param size    the memory size.
+     * @param maxSize the max size for the memory
+     * @return the memory with specified size.
+     * @see DynamicMemoryAllocator#allocate(int, int)
+     */
+    public Memory allocate(MemorySize size, MemorySize maxSize) {
+        return allocate(size.getBytes(), maxSize.getBytes());
     }
 }

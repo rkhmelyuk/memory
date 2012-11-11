@@ -1,5 +1,6 @@
 package com.khmelyuk.memory.vm.table;
 
+import com.khmelyuk.memory.MemorySize;
 import com.khmelyuk.memory.util.FormatUtil;
 
 /**
@@ -30,10 +31,10 @@ public class VirtualMemoryTableVisualizer {
         final int totalSize = freeSize + usedSize;
 
         System.out.println("Used\t"
-                + FormatUtil.sizeAsString(usedSize)
+                + FormatUtil.sizeAsString(MemorySize.bytes(usedSize))
                 + "\t" + FormatUtil.getPercent(usedSize, totalSize) + "%"
                 + "\t" + table.getUsed().size() + " blocks");
-        System.out.println("Free\t" + FormatUtil.sizeAsString(freeSize)
+        System.out.println("Free\t" + FormatUtil.sizeAsString(MemorySize.bytes(freeSize))
                 + "\t" + FormatUtil.getPercent(freeSize, totalSize) + "%"
                 + "\t" + table.getFree().size() + " blocks");
     }

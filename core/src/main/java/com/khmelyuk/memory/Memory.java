@@ -15,10 +15,6 @@ import com.khmelyuk.memory.vm.VirtualMemoryStatistic;
  */
 public class Memory {
 
-    public static final int KB = 1024;
-    public static final int MB = KB * KB;
-    public static final int GB = KB * MB;
-
     private final VirtualMemory vm;
     private final FreeSpaceListener freeSpaceListener;
 
@@ -45,6 +41,18 @@ public class Memory {
         space.setFreeSpaceListener(freeSpaceListener);
 
         return space;
+    }
+
+    /**
+     * Allocates a memory space of specified size.
+     *
+     * @param size the memory size.
+     * @return the new space
+     * @throws OutOfMemoryException error to allocate a memory.
+     * @see Memory#allocate(int)
+     */
+    public MemorySpace allocate(MemorySize size) throws OutOfMemoryException {
+        return allocate(size.getBytes());
     }
 
     /**
@@ -90,12 +98,21 @@ public class Memory {
         return vm.getUsedSize();
     }
 
+    /**
+     * Returns the memory statistic information.
+     * The returned instance is a snapshot, so it's not updated
+     *
+     * @return the new instance with memory statistic information.
+     */
     public MemoryStatistic getStatistic() {
-        final VirtualMemoryStatistic vmStatistic = vm.getStatistic();
+        return buildStatistic(vm.getStatistic());
+    }
+
+    private MemoryStatistic buildStatistic(VirtualMemoryStatistic vmStatistic) {
         final MemoryStatistic statistic = new MemoryStatistic();
 
-        statistic.setFreeSize(vmStatistic.getFreeSize());
-        statistic.setUsedSize(vmStatistic.getUsedSize());
+        statistic.setFreeSize(MemorySize.bytes(vmStatistic.getFreeSize()));
+        statistic.setUsedSize(MemorySize.bytes(vmStatistic.getUsedSize()));
         statistic.setFreeBlocksCount(vmStatistic.getFreeBlocksCount());
         statistic.setUsedBlocksCount(vmStatistic.getUsedBlocksCount());
 

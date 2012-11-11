@@ -1,6 +1,6 @@
 package com.khmelyuk.memory.vm;
 
-import com.khmelyuk.memory.Memory;
+import com.khmelyuk.memory.MemorySize;
 import com.khmelyuk.memory.vm.storage.ByteArrayStorage;
 import com.khmelyuk.memory.vm.storage.ByteArrayStorageFactory;
 import com.khmelyuk.memory.vm.storage.ByteBufferStorage;
@@ -22,7 +22,7 @@ import java.nio.channels.FileChannel;
 public class VMPerformanceTestCase {
 
     static final int N = 5;
-    static final int SIZE = 2 * Memory.MB;
+    static final int SIZE = MemorySize.megabytes(2).getBytes();
     static final int COUNT_COEFF = 2000;
 
     @Test

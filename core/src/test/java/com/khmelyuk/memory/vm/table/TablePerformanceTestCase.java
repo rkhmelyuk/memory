@@ -1,6 +1,6 @@
 package com.khmelyuk.memory.vm.table;
 
-import com.khmelyuk.memory.Memory;
+import com.khmelyuk.memory.MemorySize;
 import org.junit.Test;
 
 /**
@@ -11,7 +11,7 @@ import org.junit.Test;
 public class TablePerformanceTestCase {
 
     static final int N = 20;
-    static final int SIZE = 2 * Memory.MB;
+    static final int SIZE = MemorySize.megabytes(2).getBytes();
     static final int COUNT_COEFF = 2000;
 
     @Test

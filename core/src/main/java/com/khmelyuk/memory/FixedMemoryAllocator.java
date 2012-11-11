@@ -25,4 +25,15 @@ public class FixedMemoryAllocator {
                 new LinkedVirtualMemoryTable(size)));
     }
 
+    /**
+     * Allocated a memory with specified size.
+     *
+     * @param size the memory size.
+     * @return the memory with specified size.
+     * @see #allocate(int)
+     */
+    public Memory allocate(MemorySize size) {
+        return allocate(size.getBytes());
+    }
+
 }

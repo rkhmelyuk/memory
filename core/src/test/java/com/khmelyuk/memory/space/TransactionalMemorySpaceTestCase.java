@@ -2,6 +2,7 @@ package com.khmelyuk.memory.space;
 
 import com.khmelyuk.memory.FixedMemoryAllocator;
 import com.khmelyuk.memory.Memory;
+import com.khmelyuk.memory.MemorySize;
 import com.khmelyuk.memory.space.transactional.TransactionException;
 import com.khmelyuk.memory.space.transactional.TransactionalSpace;
 import org.junit.After;
@@ -19,7 +20,7 @@ public class TransactionalMemorySpaceTestCase {
     @Before
     public void setUp() {
         FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-        memory = allocator.allocate(20 * Memory.KB);
+        memory = allocator.allocate(MemorySize.kilobytes(20));
     }
 
     @After
@@ -29,13 +30,13 @@ public class TransactionalMemorySpaceTestCase {
 
     @Test(expected = TransactionException.class)
     public void testFailsToAllocate() throws TransactionException {
-        Space s = memory.allocate(15 * Memory.KB);
+        Space s = memory.allocate(MemorySize.kilobytes(15));
         s.transactional().start();
     }
 
     @Test
     public void testTransaction() throws Exception {
-        MemorySpace space = memory.allocate(5 * Memory.KB);
+        MemorySpace space = memory.allocate(MemorySize.kilobytes(5));
 
         space.write("Hello");
         Assert.assertEquals("Hello", space.readString());
@@ -66,7 +67,7 @@ public class TransactionalMemorySpaceTestCase {
 
     @Test(expected = TransactionException.class)
     public void testNestedTransaction() throws Exception {
-        MemorySpace space = memory.allocate(5 * Memory.KB);
+        MemorySpace space = memory.allocate(MemorySize.kilobytes(5));
 
         space.write("Hello");
         Assert.assertEquals("Hello", space.readString());
@@ -84,7 +85,7 @@ public class TransactionalMemorySpaceTestCase {
 
     @Test
     public void testRollbackTransaction() throws Exception {
-        MemorySpace space = memory.allocate(5 * Memory.KB);
+        MemorySpace space = memory.allocate(MemorySize.kilobytes(5));
 
         space.write("Hello");
         Assert.assertEquals("Hello", space.readString());
@@ -115,7 +116,7 @@ public class TransactionalMemorySpaceTestCase {
 
     @Test
     public void testMultiTransaction() throws Exception {
-        MemorySpace space = memory.allocate(5 * Memory.KB);
+        MemorySpace space = memory.allocate(MemorySize.kilobytes(5));
 
         space.write("Hello");
         Assert.assertEquals("Hello", space.readString());

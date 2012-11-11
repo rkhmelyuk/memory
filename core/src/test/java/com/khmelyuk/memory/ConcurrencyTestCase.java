@@ -24,14 +24,14 @@ import java.util.List;
  */
 public class ConcurrencyTestCase {
 
-    private static final int SIZE = 2 * Memory.KB;
+    private static final int SIZE = MemorySize.kilobytes(2).getBytes();
 
     private Memory memory;
 
     @Before
     public void setUp() {
         FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-        memory = allocator.allocate(20 * Memory.KB);
+        memory = allocator.allocate(MemorySize.kilobytes(20));
     }
 
     @After

@@ -16,27 +16,27 @@ import java.math.BigDecimal;
  */
 public class MemoryStatistic {
 
-    private int usedSize;
-    private int freeSize;
+    private MemorySize usedSize;
+    private MemorySize freeSize;
 
     private int usedBlocksCount;
     private int freeBlocksCount;
     private int successAllocations;
     private BigDecimal successAllocationsPercentage;
 
-    public int getUsedSize() {
+    public MemorySize getUsedSize() {
         return usedSize;
     }
 
-    public void setUsedSize(int usedSize) {
+    public void setUsedSize(MemorySize usedSize) {
         this.usedSize = usedSize;
     }
 
-    public int getFreeSize() {
+    public MemorySize getFreeSize() {
         return freeSize;
     }
 
-    public void setFreeSize(int freeSize) {
+    public void setFreeSize(MemorySize freeSize) {
         this.freeSize = freeSize;
     }
 
@@ -57,15 +57,16 @@ public class MemoryStatistic {
     }
 
     public long getTotalSize() {
-        return (long) usedSize + freeSize;
+        // TODO - change to usedSize.add(freeSize).bytes() after bytes are long type
+        return (long) usedSize.getBytes() + freeSize.getBytes();
     }
 
     public BigDecimal getUsedPercentage() {
-        return FormatUtil.getPercent(usedSize, getTotalSize());
+        return FormatUtil.getPercent(usedSize.getBytes(), getTotalSize());
     }
 
     public BigDecimal getFreePercentage() {
-        return FormatUtil.getPercent(freeSize, getTotalSize());
+        return FormatUtil.getPercent(freeSize.getBytes(), getTotalSize());
     }
 
     public int getSuccessAllocations() {
@@ -101,7 +102,8 @@ public class MemoryStatistic {
                 + FormatUtil.sizeAsString(usedSize)
                 + "\t\t" + getUsedPercentage() + "%"
                 + "\t\t" + usedBlocksCount + " blocks");
-        writer.println("Free\t\t" + FormatUtil.sizeAsString(freeSize)
+        writer.println("Free\t\t"
+                + FormatUtil.sizeAsString(freeSize)
                 + "\t" + getFreePercentage() + "%"
                 + "\t" + freeBlocksCount + " blocks");
         writer.println("Allocated\t"

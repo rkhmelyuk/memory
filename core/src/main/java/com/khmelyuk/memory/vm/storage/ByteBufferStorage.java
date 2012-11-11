@@ -19,6 +19,7 @@ public final class ByteBufferStorage implements Storage {
         this.size = buffer.capacity();
     }
 
+    @Override
     public int size() {
         return size;
     }
@@ -29,6 +30,7 @@ public final class ByteBufferStorage implements Storage {
         size = 0;
     }
 
+    @Override
     public void write(byte[] data) throws OutOfBoundException {
         if (data.length > this.size) {
             throw new OutOfBoundException();
@@ -37,6 +39,7 @@ public final class ByteBufferStorage implements Storage {
         this.data.slice().put(data);
     }
 
+    @Override
     public void write(byte[] data, int offset) throws OutOfBoundException {
         if (offset >= size || data.length + offset > size) {
             throw new OutOfBoundException();
@@ -47,6 +50,7 @@ public final class ByteBufferStorage implements Storage {
         buf.put(data);
     }
 
+    @Override
     public void write(byte[] data, int offset, int length) throws OutOfBoundException {
         if (offset >= size || length + offset > size) {
             throw new OutOfBoundException();
@@ -68,6 +72,7 @@ public final class ByteBufferStorage implements Storage {
         buf.put(data, dataOffset, length);
     }
 
+    @Override
     public int read(byte[] data) throws OutOfBoundException {
         int length = data.length;
         if (length > size) {
@@ -79,6 +84,7 @@ public final class ByteBufferStorage implements Storage {
         return length;
     }
 
+    @Override
     public int read(byte[] data, int offset, int length) {
         if (offset + length > size) {
             length = size - offset;
@@ -110,6 +116,7 @@ public final class ByteBufferStorage implements Storage {
         return length;
     }
 
+    @Override
     public void write(byte data, int offset) throws OutOfBoundException {
         if (offset >= size) {
             throw new OutOfBoundException();
@@ -118,6 +125,7 @@ public final class ByteBufferStorage implements Storage {
         this.data.put(offset, data);
     }
 
+    @Override
     public byte read(int offset) {
         if (offset >= this.data.capacity()) {
             return -1;

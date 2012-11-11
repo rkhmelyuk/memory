@@ -2,6 +2,7 @@ package com.khmelyuk.memory.space;
 
 import com.khmelyuk.memory.FixedMemoryAllocator;
 import com.khmelyuk.memory.Memory;
+import com.khmelyuk.memory.MemorySize;
 import com.khmelyuk.memory.space.transactional.CopyTransactionalSpace;
 import com.khmelyuk.memory.space.transactional.TransactionalSpace;
 import org.junit.After;
@@ -26,7 +27,7 @@ public class MemorySpaceTestCase {
     @Before
     public void setUp() {
         FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-        memory = allocator.allocate(20 * Memory.KB);
+        memory = allocator.allocate(MemorySize.kilobytes(20));
     }
 
     @After
@@ -36,7 +37,7 @@ public class MemorySpaceTestCase {
 
     @Test
     public void testReadWrite_String() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
 
         s.write("hello world");
 
@@ -45,7 +46,7 @@ public class MemorySpaceTestCase {
 
     @Test
     public void testReadWrite_Num() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
 
         s.write(12323);
         int num = (Integer) s.read();
@@ -55,7 +56,7 @@ public class MemorySpaceTestCase {
 
     @Test
     public void testReadWrite_Data() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
         byte[] data = {1, 2, 3, 4, 5, 6, 7, 11, 12, 14};
 
         s.write(data);
@@ -67,7 +68,7 @@ public class MemorySpaceTestCase {
 
     @Test
     public void testReadWrite_Data_WithOffset() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
         byte[] data = {1, 2, 3, 4, 5, 6, 7, 11, 12, 14};
 
         s.write(data, 10, 5);
@@ -84,7 +85,7 @@ public class MemorySpaceTestCase {
 
     @Test
     public void testReadWrite_UDT() {
-        MemorySpace s = memory.allocate(2 * Memory.KB);
+        MemorySpace s = memory.allocate(MemorySize.kilobytes(2));
 
         User john = new User();
         john.firstName = "John";
@@ -102,7 +103,7 @@ public class MemorySpaceTestCase {
 
     @Test
     public void testTransactional() {
-        Space s = memory.allocate(2 * Memory.KB);
+        Space s = memory.allocate(MemorySize.kilobytes(2));
         TransactionalSpace ts = s.transactional();
 
         Assert.assertNotNull(ts);
