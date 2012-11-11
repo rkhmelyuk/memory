@@ -126,6 +126,7 @@ public class CopyTransactionalSpace implements TransactionalSpace {
         return space.transactional();
     }
 
+    @Override
     public void start() throws TransactionException {
         if (!status.compareAndSet(STATUS_NONE, STATUS_STARTING)) {
             throw new TransactionException("Space is in transaction already. Only one transaction is supported");
@@ -145,6 +146,7 @@ public class CopyTransactionalSpace implements TransactionalSpace {
         }
     }
 
+    @Override
     public void commit() throws TransactionException {
         if (!status.compareAndSet(STATUS_STARTED, STATUS_ENDING)) {
             throw new TransactionException("Not in transaction currently.");
@@ -162,6 +164,7 @@ public class CopyTransactionalSpace implements TransactionalSpace {
         }
     }
 
+    @Override
     public void rollback() throws TransactionException {
         if (!status.compareAndSet(STATUS_STARTED, STATUS_ENDING)) {
             throw new TransactionException("Not in transaction currently.");

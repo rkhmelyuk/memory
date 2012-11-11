@@ -19,8 +19,8 @@ class MemoryStatisticBuilder {
     }
 
     public MemoryStatistic build() {
-        MemorySize usedSize = MemorySize.bytes(vmStatistic.getFreeSize());
-        MemorySize freeSize = MemorySize.bytes(vmStatistic.getUsedSize());
+        MemorySize usedSize = vmStatistic.getFreeSize();
+        MemorySize freeSize = vmStatistic.getUsedSize();
 
         int usedBlocksCount = vmStatistic.getUsedBlocksCount();
         int freeBlocksCount = vmStatistic.getFreeBlocksCount();

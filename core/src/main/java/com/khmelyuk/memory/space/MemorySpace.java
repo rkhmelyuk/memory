@@ -30,14 +30,17 @@ public class MemorySpace implements Space {
         this.freeSpaceListener = freeSpaceListener;
     }
 
+    @Override
     public int getAddress() {
         return block.getAddress();
     }
 
+    @Override
     public int size() {
         return block.size();
     }
 
+    @Override
     public void free() {
         if (freeSpaceListener != null) {
             freeSpaceListener.onFreeSpace(this);
@@ -54,18 +57,22 @@ public class MemorySpace implements Space {
         return block.getOutputStream();
     }
 
+    @Override
     public void write(Object object) {
         block.writeObject(object);
     }
 
+    @Override
     public void write(String string) {
         block.write(string);
     }
 
+    @Override
     public Object read() {
         return block.readObject();
     }
 
+    @Override
     public String readString() {
         return block.readString();
     }
@@ -90,22 +97,27 @@ public class MemorySpace implements Space {
         return block.read(buffer, spaceOffset, length);
     }
 
+    @Override
     public Space readOnly() {
         return new ReadOnlySpace(this);
     }
 
+    @Override
     public VirtualMemoryBlock getBlock() {
         return block;
     }
 
+    @Override
     public void dump(OutputStream out) throws IOException {
         block.dump(out);
     }
 
+    @Override
     public TransactionalSpace transactional() {
         return new CopyTransactionalSpace(this);
     }
 
+    @Override
     public Space copy() {
         MemorySpace space = null;
         try {

@@ -8,6 +8,11 @@ package com.khmelyuk.memory.vm;
  */
 public interface FreeEventListener {
 
+    /**
+     * Called after the VM is freed.
+     *
+     * @param memory the VM that is freed.
+     */
     void onFree(VirtualMemory memory);
 
 }

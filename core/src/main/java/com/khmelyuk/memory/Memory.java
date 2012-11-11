@@ -21,7 +21,7 @@ public class Memory {
 
         freeSpaceListener = new FreeSpaceListener() {
             public void onFreeSpace(Space space) {
-                freeSpace(space);
+                Memory.this.vm.free(space.getBlock());
             }
         };
     }
@@ -58,15 +58,6 @@ public class Memory {
      */
     public void free() {
         vm.free();
-    }
-
-    /**
-     * Free the space.
-     *
-     * @param space the space to free.
-     */
-    private void freeSpace(Space space) {
-        vm.free(space.getBlock());
     }
 
     /**

@@ -1,5 +1,7 @@
 package com.khmelyuk.memory.vm;
 
+import com.khmelyuk.memory.MemorySize;
+
 /**
  * Represents a VM statistic information.
  *
@@ -7,8 +9,8 @@ package com.khmelyuk.memory.vm;
  */
 public class VirtualMemoryStatistic {
 
-    private int usedSize;
-    private int freeSize;
+    private MemorySize usedSize;
+    private MemorySize freeSize;
 
     private int usedBlocksCount;
     private int freeBlocksCount;
@@ -16,19 +18,19 @@ public class VirtualMemoryStatistic {
     private int totalAllocations;
     private int failedAllocations;
 
-    public int getUsedSize() {
+    public MemorySize getUsedSize() {
         return usedSize;
     }
 
-    public void setUsedSize(int usedSize) {
+    public void setUsedSize(MemorySize usedSize) {
         this.usedSize = usedSize;
     }
 
-    public int getFreeSize() {
+    public MemorySize getFreeSize() {
         return freeSize;
     }
 
-    public void setFreeSize(int freeSize) {
+    public void setFreeSize(MemorySize freeSize) {
         this.freeSize = freeSize;
     }
 

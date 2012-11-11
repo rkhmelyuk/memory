@@ -1,5 +1,6 @@
 package com.khmelyuk.memory.vm.table;
 
+import com.khmelyuk.memory.MemorySize;
 import com.khmelyuk.memory.OutOfBoundException;
 import com.khmelyuk.memory.vm.VirtualMemoryStatistic;
 
@@ -41,10 +42,12 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         failedAllocations = new AtomicInteger(0);
     }
 
+    @Override
     public Collection<Block> getUsed() {
         return Collections.<Block>unmodifiableCollection(used);
     }
 
+    @Override
     public Collection<Block> getFree() {
         return Collections.<Block>unmodifiableCollection(free);
     }
@@ -53,15 +56,16 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     public void fillStatisticInformation(VirtualMemoryStatistic statistic) {
         statistic.setFreeBlocksCount(free.size());
         statistic.setUsedBlocksCount(used.size());
-        statistic.setFreeSize(freeMemorySize.get());
-        statistic.setUsedSize(usedMemorySize.get());
+        statistic.setFreeSize(MemorySize.bytes(freeMemorySize.get()));
+        statistic.setUsedSize(MemorySize.bytes(usedMemorySize.get()));
         statistic.setTotalAllocations(totalAllocations.get());
         statistic.setFailedAllocations(failedAllocations.get());
     }
 
+    @Override
     public Block allocate(int size) {
-        if (size < 0) {
-            throw new OutOfBoundException("Size can't be negative: " + size);
+        if (size <= 0) {
+            throw new OutOfBoundException("Size can't be negative or be zero: " + size);
         }
 
         totalAllocations.incrementAndGet();
@@ -111,6 +115,8 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                             }
                             each.unlock();
                         } else {
+                            // looks like there was a block that was enough to allocate from
+                            // but now it's locked, so need to loop the list of blocks again.
                             repeat = true;
                         }
                     }
@@ -124,6 +130,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         return null;
     }
 
+    @Override
     public boolean free(Block block) {
         TableBlock tableBlock = getSimilarBlock(used, block, usedLock);
         if (tableBlock != null) {
@@ -235,14 +242,17 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         return false;
     }
 
+    @Override
     public int getFreeMemorySize() {
         return freeMemorySize.get();
     }
 
+    @Override
     public int getUsedMemorySize() {
         return usedMemorySize.get();
     }
 
+    @Override
     public void reset(int size) {
         try {
             usedLock.writeLock().lock();
@@ -262,6 +272,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         }
     }
 
+    @Override
     public boolean canIncreaseSize(int size) {
         final int freeSize = freeMemorySize.get();
         final int usedSize = usedMemorySize.get();
@@ -270,6 +281,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         return !(size < usedSize || size <= totalSize);
     }
 
+    @Override
     public void increaseSize(int size) {
         final int freeSize = freeMemorySize.get();
         final int usedSize = usedMemorySize.get();

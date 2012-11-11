@@ -22,14 +22,17 @@ public class ReadOnlySpace implements Space {
         this.space = space;
     }
 
+    @Override
     public int getAddress() {
         return space.getAddress();
     }
 
+    @Override
     public int size() {
         return space.size();
     }
 
+    @Override
     public void free() {
         throw new WriteNotAllowedException();
     }
@@ -44,18 +47,22 @@ public class ReadOnlySpace implements Space {
         throw new WriteNotAllowedException();
     }
 
+    @Override
     public Object read() {
         return space.read();
     }
 
+    @Override
     public String readString() {
         return space.readString();
     }
 
+    @Override
     public void write(Object object) {
         throw new WriteNotAllowedException();
     }
 
+    @Override
     public void write(String string) {
         throw new WriteNotAllowedException();
     }
@@ -80,14 +87,17 @@ public class ReadOnlySpace implements Space {
         return space.read(buffer, spaceOffset, length);
     }
 
+    @Override
     public Space readOnly() {
         return this;
     }
 
+    @Override
     public VirtualMemoryBlock getBlock() {
         return space.getBlock();
     }
 
+    @Override
     public void dump(OutputStream out) throws IOException {
         space.dump(out);
     }
@@ -97,6 +107,7 @@ public class ReadOnlySpace implements Space {
         return space.copy();
     }
 
+    @Override
     public TransactionalSpace transactional() {
         return space.transactional();
     }

@@ -3,6 +3,7 @@ package com.khmelyuk.memory;
 import com.khmelyuk.memory.space.MemorySpace;
 import com.khmelyuk.memory.space.Space;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -12,22 +13,22 @@ import org.junit.Test;
  */
 public class MemoryTest {
 
+    Memory memory;
+
+    @Before
+    public void setUp() {
+        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
+        memory = allocator.allocate(MemorySize.kilobytes(20));
+        Assert.assertNotNull(memory);
+    }
+
     @Test
     public void testAlloc() {
-
-        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-        Memory memory = allocator.allocate(MemorySize.kilobytes(20));
-
-        Assert.assertNotNull(memory);
         Assert.assertEquals(MemorySize.kilobytes(20).getBytes(), memory.size());
     }
 
     @Test
     public void testFree() {
-        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-        Memory memory = allocator.allocate(MemorySize.kilobytes(20));
-
-        Assert.assertNotNull(memory);
         Assert.assertEquals(MemorySize.kilobytes(20).getBytes(), memory.size());
 
         memory.free();
@@ -37,9 +38,6 @@ public class MemoryTest {
 
     @Test
     public void allocate() {
-        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-        Memory memory = allocator.allocate(MemorySize.kilobytes(20));
-
         MemorySpace space = memory.allocate(MemorySize.kilobytes(5));
 
         Assert.assertNotNull(space);
@@ -49,9 +47,6 @@ public class MemoryTest {
 
     @Test
     public void allocateUsingMemorySize() {
-        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-        Memory memory = allocator.allocate(MemorySize.kilobytes(20));
-
         MemorySpace space = memory.allocate(MemorySize.kilobytes(5));
 
         Assert.assertNotNull(space);
@@ -61,9 +56,6 @@ public class MemoryTest {
 
     @Test
     public void testAllocSpaces() {
-        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-        Memory memory = allocator.allocate(MemorySize.kilobytes(20));
-
         MemorySpace space = memory.allocate(MemorySize.kilobytes(5));
 
         Assert.assertNotNull(space);
@@ -81,17 +73,11 @@ public class MemoryTest {
 
     @Test(expected = OutOfMemoryException.class)
     public void testAllocSpace_NoSize() {
-        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-        Memory memory = allocator.allocate(MemorySize.kilobytes(20));
-
         memory.allocate(MemorySize.kilobytes(25));
     }
 
     @Test(expected = OutOfMemoryException.class)
     public void testAllocSpace_OutOfMemory() {
-        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-        Memory memory = allocator.allocate(MemorySize.kilobytes(20));
-
         MemorySpace s = memory.allocate(MemorySize.kilobytes(10));
         Assert.assertNotNull(s);
         s = memory.allocate(MemorySize.kilobytes(10));
@@ -101,9 +87,6 @@ public class MemoryTest {
 
     @Test
     public void testFreeSpaces() {
-        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-        Memory memory = allocator.allocate(MemorySize.kilobytes(20));
-
         MemorySpace space = memory.allocate(MemorySize.kilobytes(5));
 
         Assert.assertNotNull(space);
@@ -130,6 +113,14 @@ public class MemoryTest {
         Assert.assertEquals(MemorySize.kilobytes(5).getBytes(), space3.size());
         Assert.assertEquals(MemorySize.kilobytes(5).getBytes(), space3.getAddress());
         Assert.assertEquals(MemorySize.kilobytes(10).getBytes(), memory.getFreeMemorySize());
+    }
+
+    @Test
+    public void freeSpaceAfterMemoryFreed() {
+        MemorySpace space = memory.allocate(MemorySize.kilobytes(5));
+        memory.free();
+
+        space.free();
     }
 
     @Test
@@ -174,9 +165,6 @@ public class MemoryTest {
 
     @Test
     public void testAllocateBegin() {
-        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-        Memory memory = allocator.allocate(MemorySize.kilobytes(20));
-
         MemorySpace space = memory.allocate(MemorySize.kilobytes(5));
 
         Assert.assertNotNull(space);
@@ -204,11 +192,6 @@ public class MemoryTest {
 
     @Test
     public void testGetStatistic() {
-        FixedMemoryAllocator allocator = new FixedMemoryAllocator();
-
-        Memory memory = allocator.allocate(MemorySize.kilobytes(20));
-        Assert.assertNotNull(memory);
-
         Space space = memory.allocate(MemorySize.kilobytes(20));
         Assert.assertNotNull(space);
 

@@ -19,6 +19,7 @@ final class TableBlock implements Block, Comparable<TableBlock> {
         this.size = size;
     }
 
+    @Override
     public int getAddress() {
         return address;
     }
@@ -27,6 +28,7 @@ final class TableBlock implements Block, Comparable<TableBlock> {
         this.address = address;
     }
 
+    @Override
     public int getSize() {
         return size;
     }
