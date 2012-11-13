@@ -14,7 +14,7 @@ import java.io.OutputStream;
  *
  * @author Ruslan Khmelyuk
  */
-public class ReadOnlySpace implements Space {
+public final class ReadOnlySpace implements Space {
 
     private final Space space;
 

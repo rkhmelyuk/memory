@@ -15,18 +15,15 @@ import java.io.OutputStream;
  *
  * @author Ruslan Khmelyuk
  */
-public class MemorySpace implements Space {
+public final class MemorySpace implements Space {
 
-    private Memory memory;
-    private VirtualMemoryBlock block;
-    private FreeSpaceListener freeSpaceListener;
+    private final Memory memory;
+    private final VirtualMemoryBlock block;
+    private final FreeSpaceListener freeSpaceListener;
 
-    public MemorySpace(Memory memory, VirtualMemoryBlock block) {
-        this.memory = memory;
+    public MemorySpace(Memory memory, VirtualMemoryBlock block, FreeSpaceListener freeSpaceListener) {
         this.block = block;
-    }
-
-    public void setFreeSpaceListener(FreeSpaceListener freeSpaceListener) {
+        this.memory = memory;
         this.freeSpaceListener = freeSpaceListener;
     }
 

@@ -35,10 +35,7 @@ public class Memory {
      */
     public MemorySpace allocate(int length) throws OutOfMemoryException {
         final VirtualMemoryBlock block = vm.allocate(length);
-        final MemorySpace space = new MemorySpace(this, block);
-        space.setFreeSpaceListener(freeSpaceListener);
-
-        return space;
+        return new MemorySpace(this, block, freeSpaceListener);
     }
 
     /**

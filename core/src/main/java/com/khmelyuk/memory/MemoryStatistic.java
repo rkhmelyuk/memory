@@ -16,7 +16,7 @@ import java.math.BigDecimal;
  *
  * @author Ruslan Khmelyuk
  */
-public class MemoryStatistic {
+public final class MemoryStatistic {
 
     private final MemorySize usedSize;
     private final MemorySize freeSize;
