@@ -13,7 +13,7 @@ import java.io.OutputStream;
 /**
  * @author Ruslan Khmelyuk
  */
-public class VirtualMemoryBlockTestCase {
+public class VirtualMemoryBlockTest {
 
     @Test
     public void testGetInputStream() throws Exception {

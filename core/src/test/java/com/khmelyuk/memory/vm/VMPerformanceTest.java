@@ -19,7 +19,7 @@ import java.nio.channels.FileChannel;
  *
  * @author Ruslan Khmelyuk
  */
-public class VMPerformanceTestCase {
+public class VMPerformanceTest {
 
     static final int N = 5;
     static final int SIZE = MemorySize.megabytes(2).getBytes();

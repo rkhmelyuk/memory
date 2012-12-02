@@ -6,7 +6,7 @@ import org.junit.Test;
 /**
  * @author Ruslan Khmelyuk
  */
-public class VirtualMemoryTableVisualizerTestCase {
+public class VirtualMemoryTableVisualizerTest {
 
     VirtualMemoryTableVisualizer visualizer = new VirtualMemoryTableVisualizer();
 

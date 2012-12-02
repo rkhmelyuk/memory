@@ -6,7 +6,7 @@ import org.junit.Test;
 /**
  * @author Ruslan Khmelyuk
  */
-public class DynamicMemoryAllocatorTestCase {
+public class DynamicMemoryAllocatorTest {
 
     @Test
     public void testAllocateMemory() {

@@ -6,7 +6,7 @@ import org.junit.Test;
 /**
  * @author Ruslan Khmelyuk
  */
-public class ByteArrayStorageTestCase {
+public class ByteArrayStorageTest {
 
     @Test
     public void testWriteWithOffsets() {

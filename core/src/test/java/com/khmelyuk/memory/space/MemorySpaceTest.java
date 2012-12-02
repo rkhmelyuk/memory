@@ -20,7 +20,7 @@ import static org.hamcrest.CoreMatchers.not;
  *
  * @author Ruslan Khmelyuk
  */
-public class MemorySpaceTestCase {
+public class MemorySpaceTest {
 
     private Memory memory;
 

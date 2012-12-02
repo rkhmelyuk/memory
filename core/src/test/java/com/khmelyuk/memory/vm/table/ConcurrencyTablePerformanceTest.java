@@ -8,7 +8,7 @@ import org.junit.Test;
  *
  * @author Ruslan Khmelyuk
  */
-public class ConcurrencyTablePerformanceTestCase {
+public class ConcurrencyTablePerformanceTest {
 
     static final int N = 5;
     static final int SIZE = MemorySize.megabytes(2).getBytes();

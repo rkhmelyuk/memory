@@ -9,7 +9,7 @@ import java.io.File;
 /**
  * @author Ruslan Khmelyuk
  */
-public class MemoryFileTestCase {
+public class MemoryFileTest {
 
     private final FileMemoryAllocator allocator = new FileMemoryAllocator();
 

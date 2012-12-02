@@ -11,7 +11,7 @@ import org.junit.Test;
 /**
  * @author Ruslan Khmelyuk
  */
-public class DynamicVirtualMemoryTestCase extends VirtualMemoryTestCase {
+public class DynamicVirtualMemoryTest extends VirtualMemoryTest {
 
     @Test
     public void testAllocate() {

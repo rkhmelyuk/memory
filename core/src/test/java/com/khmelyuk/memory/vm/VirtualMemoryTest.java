@@ -9,7 +9,7 @@ import org.junit.Test;
  *
  * @author Ruslan Khmelyuk
  */
-public abstract class VirtualMemoryTestCase {
+public abstract class VirtualMemoryTest {
 
     protected abstract VirtualMemory createVirtualMemory(int size);
 

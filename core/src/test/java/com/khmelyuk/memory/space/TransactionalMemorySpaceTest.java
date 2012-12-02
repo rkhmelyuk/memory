@@ -13,7 +13,7 @@ import org.junit.Test;
 /**
  * @author Ruslan Khmelyuk
  */
-public class TransactionalMemorySpaceTestCase {
+public class TransactionalMemorySpaceTest {
 
     private Memory memory;
 

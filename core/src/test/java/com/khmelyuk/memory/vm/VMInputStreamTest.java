@@ -8,7 +8,7 @@ import org.junit.Test;
 /**
  * @author Ruslan Khmelyuk
  */
-public class VMInputStreamTestCase {
+public class VMInputStreamTest {
 
     @Test
     public void testRead() throws Exception {

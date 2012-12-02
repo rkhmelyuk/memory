@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @author Ruslan Khmelyuk
  */
-public class ConcurrencyTestCase {
+public class ConcurrencyTest {
 
     private static final int SIZE = MemorySize.kilobytes(2).getBytes();
 

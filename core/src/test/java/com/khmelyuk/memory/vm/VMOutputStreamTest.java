@@ -10,7 +10,7 @@ import java.io.IOException;
 /**
  * @author Ruslan Khmelyuk
  */
-public class VMOutputStreamTestCase {
+public class VMOutputStreamTest {
 
     @Test
     public void testWrite() throws Exception {

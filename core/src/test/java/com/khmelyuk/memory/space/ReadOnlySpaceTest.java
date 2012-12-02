@@ -21,7 +21,7 @@ import static org.hamcrest.CoreMatchers.not;
  *
  * @author Ruslan Khmelyuk
  */
-public class ReadOnlySpaceTestCase {
+public class ReadOnlySpaceTest {
 
     private Memory memory;
 
