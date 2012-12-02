@@ -23,17 +23,23 @@ public final class MemoryStatistic {
 
     private final int usedBlocksCount;
     private final int freeBlocksCount;
-    private final int successAllocations;
-    private final BigDecimal successAllocationsPercentage;
+
+    private final long totalAllocations;
+    private final long failedAllocations;
+
+    private final long totalFrees;
+    private final long failedFrees;
 
     public MemoryStatistic(MemorySize usedSize, MemorySize freeSize, int usedBlocksCount, int freeBlocksCount,
-                           int successAllocations, BigDecimal successAllocationsPercentage) {
+                           long totalAllocations, long failedAllocations, long totalFrees, long failedFrees) {
         this.usedSize = usedSize;
         this.freeSize = freeSize;
         this.usedBlocksCount = usedBlocksCount;
         this.freeBlocksCount = freeBlocksCount;
-        this.successAllocations = successAllocations;
-        this.successAllocationsPercentage = successAllocationsPercentage;
+        this.totalAllocations = totalAllocations;
+        this.failedAllocations = failedAllocations;
+        this.totalFrees = totalFrees;
+        this.failedFrees = failedFrees;
     }
 
     public MemorySize getUsedSize() {
@@ -65,12 +71,44 @@ public final class MemoryStatistic {
         return FormatUtil.getPercent(freeSize.getBytes(), getTotalSize());
     }
 
-    public int getSuccessAllocations() {
-        return successAllocations;
+    public long getTotalAllocations() {
+        return totalAllocations;
+    }
+
+    public long getFailedAllocations() {
+        return failedAllocations;
+    }
+
+    public long getSuccessAllocations() {
+        return totalAllocations - failedAllocations;
     }
 
     public BigDecimal getSuccessAllocationsPercentage() {
-        return successAllocationsPercentage;
+        return FormatUtil.getPercent(getSuccessAllocations(), getTotalAllocations());
+    }
+
+    public BigDecimal getFailedAllocationsPercentage() {
+        return FormatUtil.getPercent(getFailedAllocations(), getTotalAllocations());
+    }
+
+    public long getTotalFrees() {
+        return totalFrees;
+    }
+
+    public long getFailedFrees() {
+        return failedFrees;
+    }
+
+    public long getSuccessFrees() {
+        return totalFrees - failedFrees;
+    }
+
+    public BigDecimal getSuccessFreesPercentage() {
+        return FormatUtil.getPercent(getSuccessFrees(), getTotalFrees());
+    }
+
+    public BigDecimal getFailedFreesPercentage() {
+        return FormatUtil.getPercent(getFailedFrees(), getTotalFrees());
     }
 
     /**
@@ -93,10 +131,13 @@ public final class MemoryStatistic {
         writer.println("Free\t\t"
                 + FormatUtil.sizeAsString(freeSize)
                 + "\t" + getFreePercentage() + "%"
-                + "\t" + freeBlocksCount + " blocks");
+                + "\t" + getFreeBlocksCount() + " blocks");
         writer.println("Allocated\t"
-                + successAllocations + " blocks"
-                + "\t" + successAllocationsPercentage + "%");
+                + getSuccessAllocations() + " blocks"
+                + "\t" + getSuccessAllocationsPercentage() + "%");
+        writer.println("Freed\t"
+                + getSuccessFrees() + " blocks"
+                + "\t" + getSuccessFreesPercentage() + "%");
 
         writer.flush();
     }

@@ -15,8 +15,11 @@ public class VirtualMemoryStatistic {
     private int usedBlocksCount;
     private int freeBlocksCount;
 
-    private int totalAllocations;
-    private int failedAllocations;
+    private long totalAllocations;
+    private long failedAllocations;
+
+    private long totalFrees;
+    private Long failedFrees;
 
     public MemorySize getUsedSize() {
         return usedSize;
@@ -50,19 +53,35 @@ public class VirtualMemoryStatistic {
         this.freeBlocksCount = freeBlocksCount;
     }
 
-    public int getTotalAllocations() {
+    public long getTotalAllocations() {
         return totalAllocations;
     }
 
-    public void setTotalAllocations(int totalAllocations) {
+    public void setTotalAllocations(long totalAllocations) {
         this.totalAllocations = totalAllocations;
     }
 
-    public int getFailedAllocations() {
+    public long getFailedAllocations() {
         return failedAllocations;
     }
 
-    public void setFailedAllocations(int failedAllocations) {
+    public void setFailedAllocations(long failedAllocations) {
         this.failedAllocations = failedAllocations;
+    }
+
+    public long getTotalFrees() {
+        return totalFrees;
+    }
+
+    public void setTotalFrees(long totalFrees) {
+        this.totalFrees = totalFrees;
+    }
+
+    public Long getFailedFrees() {
+        return failedFrees;
+    }
+
+    public void setFailedFrees(Long failedFrees) {
+        this.failedFrees = failedFrees;
     }
 }

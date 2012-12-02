@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -29,8 +30,11 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     private final AtomicInteger freeMemorySize;
     private final AtomicInteger usedMemorySize;
 
-    private final AtomicInteger totalAllocations;
-    private final AtomicInteger failedAllocations;
+    private final AtomicLong totalAllocations;
+    private final AtomicLong failedAllocations;
+
+    private final AtomicLong totalFrees;
+    private final AtomicLong failedFrees;
 
     public LinkedVirtualMemoryTable(int size) {
         free.add(new TableBlock(0, size));
@@ -38,8 +42,11 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         usedMemorySize = new AtomicInteger(0);
         freeMemorySize = new AtomicInteger(size);
 
-        totalAllocations = new AtomicInteger(0);
-        failedAllocations = new AtomicInteger(0);
+        totalAllocations = new AtomicLong(0);
+        failedAllocations = new AtomicLong(0);
+
+        totalFrees = new AtomicLong(0);
+        failedFrees = new AtomicLong(0);
     }
 
     @Override
@@ -60,6 +67,8 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         statistic.setUsedSize(MemorySize.bytes(usedMemorySize.get()));
         statistic.setTotalAllocations(totalAllocations.get());
         statistic.setFailedAllocations(failedAllocations.get());
+        statistic.setTotalFrees(totalFrees.get());
+        statistic.setFailedFrees(failedFrees.get());
     }
 
     @Override
@@ -132,6 +141,12 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
     @Override
     public boolean free(Block block) {
+        if (block == null) {
+            return false;
+        }
+
+        totalFrees.incrementAndGet();
+
         TableBlock tableBlock = getSimilarBlock(used, block, usedLock);
         if (tableBlock != null) {
             if (removeBlock(used, tableBlock, usedLock)) {
@@ -150,6 +165,9 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                 return true;
             }
         }
+
+        failedFrees.incrementAndGet();
+
         return false;
     }
 
@@ -254,6 +272,13 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
     @Override
     public void reset(int size) {
+        // reset allocations/frees count first, as it's not used
+        // for any functionality but to show information
+        totalAllocations.set(0L);
+        failedAllocations.set(0L);
+        totalFrees.set(0L);
+        failedFrees.set(0L);
+
         try {
             usedLock.writeLock().lock();
             used.clear();

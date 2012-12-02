@@ -8,21 +8,13 @@ import org.junit.Test;
  *
  * @author Ruslan Khmelyuk
  */
-public class TablePerformanceTestCase {
+public class TablePerformanceTest {
 
     static final int N = 20;
     static final int SIZE = MemorySize.megabytes(2).getBytes();
     static final int COUNT_COEFF = 2000;
 
-    @Test
-    public void test2LinkedTablePerformance() {
-        testPerformance(new LinkedVirtualMemoryTable(SIZE), 0);
-        for (int i = 0; i < N; i++) {
-            testPerformance(new LinkedVirtualMemoryTable(SIZE), i);
-        }
-    }
-
-    @Test
+    @Test(timeout = 500)
     public void testLinkedTablePerformance() {
         testPerformance(new LinkedVirtualMemoryTable(SIZE), 0);
         long total = 0;
@@ -41,9 +33,6 @@ public class TablePerformanceTestCase {
         long begin = System.currentTimeMillis();
         for (int i = 0; i < max; i++) {
             blocks[i] = table.allocate(avgBlockSize);
-            /*if (blocks[i] != null) {
-                System.out.println(blocks[i]);
-            }*/
             if (i != 0) {
                 free(table, blocks, i - 1);
             }

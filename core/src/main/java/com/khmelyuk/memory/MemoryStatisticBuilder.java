@@ -1,9 +1,6 @@
 package com.khmelyuk.memory;
 
-import com.khmelyuk.memory.util.FormatUtil;
 import com.khmelyuk.memory.vm.VirtualMemoryStatistic;
-
-import java.math.BigDecimal;
 
 /**
  * The builder for {@link MemoryStatistic}.
@@ -25,11 +22,16 @@ class MemoryStatisticBuilder {
         int usedBlocksCount = vmStatistic.getUsedBlocksCount();
         int freeBlocksCount = vmStatistic.getFreeBlocksCount();
 
-        int totalAllocations = vmStatistic.getTotalAllocations();
-        int successAllocations = totalAllocations - vmStatistic.getFailedAllocations();
-        BigDecimal successAllocationsPercentage = FormatUtil.getPercent(successAllocations, totalAllocations);
+        long totalAllocations = vmStatistic.getTotalAllocations();
+        long failedAllocations = vmStatistic.getFailedAllocations();
 
-        return new MemoryStatistic(usedSize, freeSize, usedBlocksCount,
-                freeBlocksCount, successAllocations, successAllocationsPercentage);
+        long totalFrees = vmStatistic.getTotalFrees();
+        long failedFrees = vmStatistic.getFailedFrees();
+
+        return new MemoryStatistic(
+                usedSize, freeSize,
+                usedBlocksCount, freeBlocksCount,
+                totalAllocations, failedAllocations,
+                totalFrees, failedFrees);
     }
 }
