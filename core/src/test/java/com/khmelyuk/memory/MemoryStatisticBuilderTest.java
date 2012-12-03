@@ -1,6 +1,7 @@
 package com.khmelyuk.memory;
 
 import com.khmelyuk.memory.metrics.MetricsSnapshot;
+import com.khmelyuk.memory.metrics.MetricsSnapshotBuilder;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -30,17 +31,17 @@ public class MemoryStatisticBuilderTest {
     }
 
     private MetricsSnapshot createMetrics() {
-        MetricsSnapshot metrics = new MetricsSnapshot();
+        MetricsSnapshotBuilder builder = new MetricsSnapshotBuilder();
 
-        metrics.put("freeSize", 100L);
-        metrics.put("usedSize", 10L);
-        metrics.put("freeBlocksCount", 10L);
-        metrics.put("usedBlocksCount", 5L);
-        metrics.put("totalAllocations", 5L);
-        metrics.put("failedAllocations", 2L);
-        metrics.put("totalFrees", 6L);
-        metrics.put("failedFrees", 3L);
+        builder.put("freeSize", 100L);
+        builder.put("usedSize", 10L);
+        builder.put("freeBlocksCount", 10L);
+        builder.put("usedBlocksCount", 5L);
+        builder.put("totalAllocations", 5L);
+        builder.put("failedAllocations", 2L);
+        builder.put("totalFrees", 6L);
+        builder.put("failedFrees", 3L);
 
-        return metrics;
+        return builder.build();
     }
 }

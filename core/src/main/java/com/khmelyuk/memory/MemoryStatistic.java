@@ -1,5 +1,6 @@
 package com.khmelyuk.memory;
 
+import com.khmelyuk.memory.annotation.Immutable;
 import com.khmelyuk.memory.util.FormatUtil;
 
 import java.io.PrintWriter;
@@ -17,6 +18,7 @@ import java.math.BigDecimal;
  *
  * @author Ruslan Khmelyuk
  */
+@Immutable
 public final class MemoryStatistic implements Serializable {
 
     private final MemorySize usedSize;

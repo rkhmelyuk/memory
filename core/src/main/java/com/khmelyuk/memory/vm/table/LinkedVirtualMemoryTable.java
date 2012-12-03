@@ -3,6 +3,7 @@ package com.khmelyuk.memory.vm.table;
 import com.khmelyuk.memory.OutOfBoundException;
 import com.khmelyuk.memory.metrics.Metrics;
 import com.khmelyuk.memory.metrics.MetricsSnapshot;
+import com.khmelyuk.memory.metrics.MetricsSnapshotBuilder;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -60,15 +61,18 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
     @Override
     public MetricsSnapshot getMetrics() {
-        final MetricsSnapshot snapshot = metrics.snapshot();
+        final MetricsSnapshotBuilder builder = new MetricsSnapshotBuilder();
+
+        builder.fromMetrics(metrics);
 
         // additional metrics
-        snapshot.put("freeSize", freeMemorySize.longValue());
-        snapshot.put("usedSize", usedMemorySize.longValue());
-        snapshot.put("freeBlocksCount", (long) free.size());
-        snapshot.put("usedBlocksCount", (long) used.size());
+        builder
+                .put("freeSize", freeMemorySize.longValue())
+                .put("usedSize", usedMemorySize.longValue())
+                .put("freeBlocksCount", (long) free.size())
+                .put("usedBlocksCount", (long) used.size());
 
-        return snapshot;
+        return builder.build();
     }
 
     @Override

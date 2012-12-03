@@ -1,22 +1,27 @@
 package com.khmelyuk.memory.metrics;
 
-import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Represents a snapshot of metrics at some moment of time.
  *
  * @author Ruslan Khmelyuk
  */
-public final class MetricsSnapshot extends HashMap<String, Long> {
+public interface MetricsSnapshot {
 
-    public long get(String metric, long defaultValue) {
-        Long value = get(metric);
-        return value != null ? value : defaultValue;
-    }
+    /**
+     * Gets the set of metrics names.
+     *
+     * @return the set of metrics names.
+     */
+    Set<String> getMetrics();
 
-    public int getInt(String metric, int defaultValue) {
-        Long value = get(metric);
-        return value != null ? value.intValue() : defaultValue;
-    }
+    Long get(String metric);
+
+    long get(String metric, long defaultValue);
+
+    int getInt(String metric, int defaultValue);
+
+    int size();
 
 }

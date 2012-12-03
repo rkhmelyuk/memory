@@ -1,5 +1,6 @@
 package com.khmelyuk.memory.metrics;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -110,11 +111,11 @@ public final class Metrics {
      * @return the current metrics shapshot.
      */
     public MetricsSnapshot snapshot() {
-        final MetricsSnapshot snapshot = new MetricsSnapshot();
+        final Map<String, Long> map = new HashMap<>();
         for (Map.Entry<String, AtomicLong> each : metrics.entrySet()) {
-            snapshot.put(each.getKey(), each.getValue().get());
+            map.put(each.getKey(), each.getValue().get());
         }
-        return snapshot;
+        return new MapMetricsSnapshot(map);
     }
 
     private AtomicLong getValue(String name) {
