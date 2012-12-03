@@ -1,10 +1,15 @@
 package com.khmelyuk.memory;
 
+import com.khmelyuk.memory.metrics.MetricsSnapshot;
 import com.khmelyuk.memory.space.MemorySpace;
 import com.khmelyuk.memory.space.Space;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.matchers.JUnitMatchers.hasItem;
 
 /**
  * Test case for Memory class.
@@ -214,5 +219,22 @@ public class MemoryTest {
         Assert.assertEquals(1, stats.getFreeBlocksCount());
         Assert.assertEquals(0, stats.getUsedBlocksCount());
         Assert.assertEquals(1, stats.getSuccessAllocations());
+    }
+
+    @Test
+    public void spacesMetric() {
+        Space space = memory.allocate(MemorySize.kilobytes(20));
+
+        assertThat(memory.getMetrics().get("spaces"), is(1L));
+
+        space.free();
+
+        assertThat(memory.getMetrics().get("spaces"), is(0L));
+    }
+
+    @Test
+    public void hasMetrics() {
+        MetricsSnapshot snapshot = memory.getMetrics();
+        assertThat(snapshot.getMetrics(), hasItem("spaces"));
     }
 }

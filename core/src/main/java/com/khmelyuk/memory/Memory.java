@@ -1,6 +1,8 @@
 package com.khmelyuk.memory;
 
+import com.khmelyuk.memory.metrics.Metrics;
 import com.khmelyuk.memory.metrics.MetricsSnapshot;
+import com.khmelyuk.memory.metrics.MetricsSnapshotBuilder;
 import com.khmelyuk.memory.metrics.Monitorable;
 import com.khmelyuk.memory.space.FreeSpaceListener;
 import com.khmelyuk.memory.space.MemorySpace;
@@ -17,13 +19,18 @@ public class Memory implements Monitorable {
 
     private final VirtualMemory vm;
     private final FreeSpaceListener freeSpaceListener;
+    private final Metrics metrics;
 
     public Memory(VirtualMemory vm) {
         this.vm = vm;
 
+        metrics = new Metrics();
+        metrics.addMetric("spaces");
+
         freeSpaceListener = new FreeSpaceListener() {
             public void onFreeSpace(Space space) {
                 Memory.this.vm.free(space.getBlock());
+                metrics.decrement("spaces");
             }
         };
     }
@@ -37,6 +44,7 @@ public class Memory implements Monitorable {
      */
     public MemorySpace allocate(int length) throws OutOfMemoryException {
         final VirtualMemoryBlock block = vm.allocate(length);
+        metrics.increment("spaces");
         return new MemorySpace(this, block, freeSpaceListener);
     }
 
@@ -102,6 +110,6 @@ public class Memory implements Monitorable {
      * @return the metrics information.
      */
     public MetricsSnapshot getMetrics() {
-        return vm.getMetrics();
+        return new MetricsSnapshotBuilder().fromMetrics(metrics).merge(vm.getMetrics()).build();
     }
 }

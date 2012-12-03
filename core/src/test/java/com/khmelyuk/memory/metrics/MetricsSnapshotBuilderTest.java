@@ -3,7 +3,7 @@ package com.khmelyuk.memory.metrics;
 import org.junit.Test;
 
 import static com.khmelyuk.memory.metrics.FixtureFactory.createMetrics;
-import static com.khmelyuk.memory.metrics.FixtureFactory.createOtherMetrics;
+import static com.khmelyuk.memory.metrics.FixtureFactory.createOtherMetricsSnapshot;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -50,7 +50,9 @@ public class MetricsSnapshotBuilderTest {
     @Test
     public void merge() {
         MetricsSnapshotBuilder builder = new MetricsSnapshotBuilder();
-        MetricsSnapshot snapshot = builder.fromMetrics(createMetrics()).merge(createOtherMetrics()).build();
+        MetricsSnapshot snapshot = builder
+                .fromMetrics(createMetrics())
+                .merge(createOtherMetricsSnapshot()).build();
 
         assertThat(snapshot.get("metric1"), is(1L));
         assertThat(snapshot.get("metric2"), is(2L));
@@ -65,7 +67,7 @@ public class MetricsSnapshotBuilderTest {
         MetricsSnapshotBuilder builder = new MetricsSnapshotBuilder();
         MetricsSnapshot snapshot = builder
                 .fromMetrics(createMetrics())
-                .merge(createOtherMetrics())
+                .merge(createOtherMetricsSnapshot())
                 .put("metric4", 4).build();
 
         assertThat(snapshot.get("metric1"), is(1L));

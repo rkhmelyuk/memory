@@ -36,8 +36,9 @@ public final class MetricsSnapshotBuilder {
      * @param metrics the metrics to merge into existing metrics.
      * @return the ref to this builder.
      */
-    public MetricsSnapshotBuilder merge(Metrics metrics) {
-        return fromMetrics(metrics);
+    public MetricsSnapshotBuilder merge(MetricsSnapshot metrics) {
+        this.snapshots.add(metrics);
+        return this;
     }
 
     /**

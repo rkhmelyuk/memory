@@ -7,6 +7,7 @@ import org.junit.Test;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+import static org.junit.matchers.JUnitMatchers.hasItem;
 
 /**
  * @author Ruslan Khmelyuk
@@ -246,6 +247,20 @@ public class LinkedVirtualMemoryTableTest {
 
         table.free(block);
         assertThat(table.getMetrics().get("fragmentation"), is(0L));
+    }
+
+    @Test
+    public void hasMetrics() {
+        final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
+        MetricsSnapshot snapshot = table.getMetrics();
+
+        assertThat(snapshot.getMetrics(), hasItem("totalAllocations"));
+        assertThat(snapshot.getMetrics(), hasItem("failedAllocations"));
+        assertThat(snapshot.getMetrics(), hasItem("totalFrees"));
+        assertThat(snapshot.getMetrics(), hasItem("failedFrees"));
+        assertThat(snapshot.getMetrics(), hasItem("increases"));
+        assertThat(snapshot.getMetrics(), hasItem("loopsToFindFitBlock"));
+        assertThat(snapshot.getMetrics(), hasItem("fragmentation"));
     }
 
 }
