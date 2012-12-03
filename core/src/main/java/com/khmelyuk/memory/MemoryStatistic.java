@@ -1,6 +1,5 @@
 package com.khmelyuk.memory;
 
-import com.khmelyuk.memory.metrics.MetricsSnapshot;
 import com.khmelyuk.memory.util.FormatUtil;
 
 import java.io.PrintWriter;
@@ -20,8 +19,6 @@ import java.math.BigDecimal;
  */
 public final class MemoryStatistic implements Serializable {
 
-    private final MetricsSnapshot metrics;
-
     private final MemorySize usedSize;
     private final MemorySize freeSize;
 
@@ -34,12 +31,10 @@ public final class MemoryStatistic implements Serializable {
     private final long totalFrees;
     private final long failedFrees;
 
-    public MemoryStatistic(MetricsSnapshot metrics,
-                           MemorySize usedSize, MemorySize freeSize,
+    public MemoryStatistic(MemorySize usedSize, MemorySize freeSize,
                            long usedBlocksCount, long freeBlocksCount,
                            long totalAllocations, long failedAllocations,
                            long totalFrees, long failedFrees) {
-        this.metrics = metrics;
         this.usedSize = usedSize;
         this.freeSize = freeSize;
         this.usedBlocksCount = usedBlocksCount;
@@ -48,10 +43,6 @@ public final class MemoryStatistic implements Serializable {
         this.failedAllocations = failedAllocations;
         this.totalFrees = totalFrees;
         this.failedFrees = failedFrees;
-    }
-
-    public MetricsSnapshot getMetrics() {
-        return metrics;
     }
 
     public MemorySize getUsedSize() {

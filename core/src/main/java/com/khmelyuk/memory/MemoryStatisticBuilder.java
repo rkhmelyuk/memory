@@ -29,7 +29,6 @@ class MemoryStatisticBuilder {
         long failedFrees = metrics.get("failedFrees", 0);
 
         return new MemoryStatistic(
-                metrics,
                 usedSize, freeSize,
                 usedBlocksCount, freeBlocksCount,
                 totalAllocations, failedAllocations,

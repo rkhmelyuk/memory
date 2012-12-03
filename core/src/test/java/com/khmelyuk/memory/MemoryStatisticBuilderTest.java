@@ -19,7 +19,6 @@ public class MemoryStatisticBuilderTest {
         MemoryStatisticBuilder builder = new MemoryStatisticBuilder(metrics);
         MemoryStatistic statistic = builder.build();
 
-        assertThat(statistic.getMetrics(), is(metrics));
         assertThat(statistic.getFreeSize(), is(MemorySize.bytes(100)));
         assertThat(statistic.getUsedSize(), is(MemorySize.bytes(10)));
         assertThat(statistic.getFreeBlocksCount(), is(10L));
