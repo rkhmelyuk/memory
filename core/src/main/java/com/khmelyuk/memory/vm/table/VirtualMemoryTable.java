@@ -1,6 +1,6 @@
 package com.khmelyuk.memory.vm.table;
 
-import com.khmelyuk.memory.vm.VirtualMemoryStatistic;
+import com.khmelyuk.memory.metrics.Monitorable;
 
 import java.util.Collection;
 
@@ -9,7 +9,7 @@ import java.util.Collection;
  *
  * @author Ruslan Khmelyuk
  */
-public interface VirtualMemoryTable {
+public interface VirtualMemoryTable extends Monitorable {
 
     /**
      * Gets the unmodifiable collection of used blocks.
@@ -79,10 +79,4 @@ public interface VirtualMemoryTable {
      */
     boolean canIncreaseSize(int size);
 
-    /**
-     * Fills the virtual memory statistic information.
-     *
-     * @param statistic the statistic to fill.
-     */
-    void fillStatisticInformation(VirtualMemoryStatistic statistic);
 }

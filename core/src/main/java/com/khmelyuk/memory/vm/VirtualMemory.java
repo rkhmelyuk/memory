@@ -2,6 +2,7 @@ package com.khmelyuk.memory.vm;
 
 import com.khmelyuk.memory.OutOfBoundException;
 import com.khmelyuk.memory.OutOfMemoryException;
+import com.khmelyuk.memory.metrics.Monitorable;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,14 +12,7 @@ import java.io.OutputStream;
  *
  * @author Ruslan Khmelyuk
  */
-public interface VirtualMemory {
-
-    /**
-     * Gets the virtual memory statistic information.
-     *
-     * @return the virtual memory statistic information.
-     */
-    VirtualMemoryStatistic getStatistic();
+public interface VirtualMemory extends Monitorable {
 
     /**
      * Gets the virtual memory size.

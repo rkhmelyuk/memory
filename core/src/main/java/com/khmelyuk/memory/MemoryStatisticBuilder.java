@@ -1,6 +1,6 @@
 package com.khmelyuk.memory;
 
-import com.khmelyuk.memory.vm.VirtualMemoryStatistic;
+import com.khmelyuk.memory.metrics.MetricsSnapshot;
 
 /**
  * The builder for {@link MemoryStatistic}.
@@ -9,26 +9,27 @@ import com.khmelyuk.memory.vm.VirtualMemoryStatistic;
  */
 class MemoryStatisticBuilder {
 
-    private final VirtualMemoryStatistic vmStatistic;
+    private final MetricsSnapshot metrics;
 
-    MemoryStatisticBuilder(VirtualMemoryStatistic vmStatistic) {
-        this.vmStatistic = vmStatistic;
+    public MemoryStatisticBuilder(MetricsSnapshot metrics) {
+        this.metrics = metrics;
     }
 
     public MemoryStatistic build() {
-        MemorySize usedSize = vmStatistic.getFreeSize();
-        MemorySize freeSize = vmStatistic.getUsedSize();
+        MemorySize freeSize = MemorySize.bytes(metrics.getInt("freeSize", 0));
+        MemorySize usedSize = MemorySize.bytes(metrics.getInt("usedSize", 0));
 
-        int usedBlocksCount = vmStatistic.getUsedBlocksCount();
-        int freeBlocksCount = vmStatistic.getFreeBlocksCount();
+        long usedBlocksCount = metrics.get("usedBlocksCount", 0);
+        long freeBlocksCount = metrics.get("freeBlocksCount", 0);
 
-        long totalAllocations = vmStatistic.getTotalAllocations();
-        long failedAllocations = vmStatistic.getFailedAllocations();
+        long totalAllocations = metrics.get("totalAllocations", 0);
+        long failedAllocations = metrics.get("failedAllocations", 0);
 
-        long totalFrees = vmStatistic.getTotalFrees();
-        long failedFrees = vmStatistic.getFailedFrees();
+        long totalFrees = metrics.get("totalFrees", 0);
+        long failedFrees = metrics.get("failedFrees", 0);
 
         return new MemoryStatistic(
+                metrics,
                 usedSize, freeSize,
                 usedBlocksCount, freeBlocksCount,
                 totalAllocations, failedAllocations,

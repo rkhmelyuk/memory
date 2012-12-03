@@ -1,7 +1,6 @@
 package com.khmelyuk.memory.vm.table;
 
-import com.khmelyuk.memory.MemorySize;
-import com.khmelyuk.memory.vm.VirtualMemoryStatistic;
+import com.khmelyuk.memory.metrics.MetricsSnapshot;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -130,96 +129,123 @@ public class LinkedVirtualMemoryTableTest {
     @Test
     public void allocationsCounter() {
         final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
-        final VirtualMemoryStatistic stat = new VirtualMemoryStatistic();
 
-        table.fillStatisticInformation(stat);
-        assertThat(stat.getTotalAllocations(), is(0L));
+        MetricsSnapshot metrics = table.getMetrics();
+        assertThat(metrics.get("totalAllocations"), is(0L));
 
         table.allocate(100);
-        table.fillStatisticInformation(stat);
-        assertThat(stat.getTotalAllocations(), is(1L));
+        metrics = table.getMetrics();
+        assertThat(metrics.get("totalAllocations"), is(1L));
 
         table.allocate(50);
-        table.fillStatisticInformation(stat);
-        assertThat(stat.getTotalAllocations(), is(2L));
+        metrics = table.getMetrics();
+        assertThat(metrics.get("totalAllocations"), is(2L));
     }
 
     @Test
     public void failedAllocationsCounter() {
         final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
-        final VirtualMemoryStatistic stat = new VirtualMemoryStatistic();
 
-        table.fillStatisticInformation(stat);
-        assertThat(stat.getTotalAllocations(), is(0L));
+        MetricsSnapshot metrics = table.getMetrics();
+        assertThat(metrics.get("totalAllocations"), is(0L));
 
         table.allocate(300);
-        table.fillStatisticInformation(stat);
-        assertThat(stat.getTotalAllocations(), is(1L));
-        assertThat(stat.getFailedAllocations(), is(1L));
+        metrics = table.getMetrics();
+        assertThat(metrics.get("totalAllocations"), is(1L));
+        assertThat(metrics.get("failedAllocations"), is(1L));
     }
 
     @Test
     public void freesCounter() {
         final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
-        final VirtualMemoryStatistic stat = new VirtualMemoryStatistic();
 
-        table.fillStatisticInformation(stat);
-        assertThat(stat.getTotalAllocations(), is(0L));
-
-        table.free(table.allocate(100));
-        table.fillStatisticInformation(stat);
-        assertThat(stat.getTotalFrees(), is(1L));
+        MetricsSnapshot metrics = table.getMetrics();
+        assertThat(metrics.get("totalAllocations"), is(0L));
 
         table.free(table.allocate(100));
-        table.fillStatisticInformation(stat);
-        assertThat(stat.getTotalFrees(), is(2L));
+        metrics = table.getMetrics();
+        assertThat(metrics.get("totalFrees"), is(1L));
+
+        table.free(table.allocate(100));
+        metrics = table.getMetrics();
+        assertThat(metrics.get("totalFrees"), is(2L));
     }
 
     @Test
     public void failedFreesCounter() {
         final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
-        final VirtualMemoryStatistic stat = new VirtualMemoryStatistic();
 
-        table.fillStatisticInformation(stat);
-        assertThat(stat.getTotalAllocations(), is(0L));
+        MetricsSnapshot metrics = table.getMetrics();
+        assertThat(metrics.get("totalAllocations"), is(0L));
 
         Block block = table.allocate(100);
         assertTrue(table.free(block));
         assertFalse(table.free(block));
 
-        table.fillStatisticInformation(stat);
-        assertThat(stat.getTotalFrees(), is(2L));
-        assertThat(stat.getFailedFrees(), is(1L));
+        metrics = table.getMetrics();
+        assertThat(metrics.get("totalFrees"), is(2L));
+        assertThat(metrics.get("failedFrees"), is(1L));
     }
 
     @Test
     public void resetTableResetsStatistic() {
         final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
-        final VirtualMemoryStatistic stat = new VirtualMemoryStatistic();
 
         table.allocate(20);
-        table.fillStatisticInformation(stat);
+        MetricsSnapshot metrics = table.getMetrics();
 
-        assertThat(stat.getTotalAllocations(), is(1L));
-        assertThat(stat.getFailedAllocations(), is(0L));
-        assertThat(stat.getTotalFrees(), is(0L));
-        assertThat(stat.getFailedFrees(), is(0L));
-        assertThat(stat.getFreeBlocksCount(), is(1));
-        assertThat(stat.getUsedBlocksCount(), is(1));
-        assertThat(stat.getFreeSize(), is(MemorySize.bytes(180)));
-        assertThat(stat.getUsedSize(), is(MemorySize.bytes(20)));
+        assertThat(metrics.get("totalAllocations"), is(1L));
+        assertThat(metrics.get("failedAllocations"), is(0L));
+        assertThat(metrics.get("totalFrees"), is(0L));
+        assertThat(metrics.get("failedFrees"), is(0L));
+        assertThat(metrics.get("freeBlocksCount"), is(1L));
+        assertThat(metrics.get("usedBlocksCount"), is(1L));
+        assertThat(metrics.get("freeSize"), is(180L));
+        assertThat(metrics.get("usedSize"), is(20L));
 
         table.reset(0);
-        table.fillStatisticInformation(stat);
+        metrics = table.getMetrics();
 
-        assertThat(stat.getTotalAllocations(), is(0L));
-        assertThat(stat.getFailedAllocations(), is(0L));
-        assertThat(stat.getTotalFrees(), is(0L));
-        assertThat(stat.getFailedFrees(), is(0L));
-        assertThat(stat.getFreeBlocksCount(), is(1));
-        assertThat(stat.getUsedBlocksCount(), is(0));
-        assertThat(stat.getFreeSize(), is(MemorySize.bytes(200)));
-        assertThat(stat.getUsedSize(), is(MemorySize.bytes(0)));
+        assertThat(metrics.get("totalAllocations"), is(0L));
+        assertThat(metrics.get("failedAllocations"), is(0L));
+        assertThat(metrics.get("totalFrees"), is(0L));
+        assertThat(metrics.get("failedFrees"), is(0L));
+        assertThat(metrics.get("freeBlocksCount"), is(1L));
+        assertThat(metrics.get("usedBlocksCount"), is(0L));
+        assertThat(metrics.get("freeSize"), is(0L));
+        assertThat(metrics.get("usedSize"), is(0L));
+    }
+
+    @Test
+    public void fragmentationOnAllocate() {
+        final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
+
+        table.allocate(100);
+        assertThat(table.getMetrics().get("fragmentation"), is(1L));
+
+        table.allocate(100);
+        assertThat(table.getMetrics().get("fragmentation"), is(0L));
+    }
+
+    @Test
+    public void fragmentationOnFree() {
+        final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
+
+        Block block = table.allocate(100);
+        assertThat(table.getMetrics().get("fragmentation"), is(1L));
+
+        table.free(block);
+        assertThat(table.getMetrics().get("fragmentation"), is(0L));
+
+        block = table.allocate(100);
+        Block block1 = table.allocate(50);
+        assertThat(table.getMetrics().get("fragmentation"), is(2L));
+
+        table.free(block1);
+        assertThat(table.getMetrics().get("fragmentation"), is(1L));
+
+        table.free(block);
+        assertThat(table.getMetrics().get("fragmentation"), is(0L));
     }
 
 }

@@ -38,6 +38,6 @@ public class MemoryStatisticTest {
     }
 
     private MemoryStatistic createMemoryStatistic() {
-        return new MemoryStatistic(MemorySize.bytes(100), MemorySize.bytes(50), 10, 5, 10, 1, 5, 2);
+        return new MemoryStatistic(null, MemorySize.bytes(100), MemorySize.bytes(50), 10, 5, 10, 1, 5, 2);
     }
 }

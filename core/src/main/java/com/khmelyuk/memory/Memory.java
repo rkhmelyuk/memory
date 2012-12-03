@@ -1,5 +1,7 @@
 package com.khmelyuk.memory;
 
+import com.khmelyuk.memory.metrics.MetricsSnapshot;
+import com.khmelyuk.memory.metrics.Monitorable;
 import com.khmelyuk.memory.space.FreeSpaceListener;
 import com.khmelyuk.memory.space.MemorySpace;
 import com.khmelyuk.memory.space.Space;
@@ -11,7 +13,7 @@ import com.khmelyuk.memory.vm.VirtualMemoryBlock;
  *
  * @author Ruslan Khmelyuk
  */
-public class Memory {
+public class Memory implements Monitorable {
 
     private final VirtualMemory vm;
     private final FreeSpaceListener freeSpaceListener;
@@ -91,7 +93,15 @@ public class Memory {
      * @return the new instance with memory statistic information.
      */
     public MemoryStatistic getStatistic() {
-        return new MemoryStatisticBuilder(vm.getStatistic()).build();
+        return new MemoryStatisticBuilder(getMetrics()).build();
     }
 
+    /**
+     * Return the metrics snapshot.
+     *
+     * @return the metrics information.
+     */
+    public MetricsSnapshot getMetrics() {
+        return vm.getMetrics();
+    }
 }

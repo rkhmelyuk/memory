@@ -1,6 +1,7 @@
 package com.khmelyuk.memory.vm;
 
 import com.khmelyuk.memory.OutOfBoundException;
+import com.khmelyuk.memory.metrics.MetricsSnapshot;
 import com.khmelyuk.memory.vm.storage.Storage;
 import com.khmelyuk.memory.vm.table.VirtualMemoryTable;
 
@@ -61,10 +62,10 @@ public abstract class AbstractVirtualMemory<S extends Storage> implements Virtua
         this.freeEventListener = listener;
     }
 
-    public VirtualMemoryStatistic getStatistic() {
-        VirtualMemoryStatistic statistic = new VirtualMemoryStatistic();
-        table.fillStatisticInformation(statistic);
-        return statistic;
+    @Override
+    public MetricsSnapshot getMetrics() {
+        // TODO - add own metrics here
+        return table.getMetrics();
     }
 
     // ---------------------------------------------- Read/write support

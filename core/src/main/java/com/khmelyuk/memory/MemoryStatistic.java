@@ -1,8 +1,10 @@
 package com.khmelyuk.memory;
 
+import com.khmelyuk.memory.metrics.MetricsSnapshot;
 import com.khmelyuk.memory.util.FormatUtil;
 
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
@@ -16,13 +18,15 @@ import java.math.BigDecimal;
  *
  * @author Ruslan Khmelyuk
  */
-public final class MemoryStatistic {
+public final class MemoryStatistic implements Serializable {
+
+    private final MetricsSnapshot metrics;
 
     private final MemorySize usedSize;
     private final MemorySize freeSize;
 
-    private final int usedBlocksCount;
-    private final int freeBlocksCount;
+    private final long usedBlocksCount;
+    private final long freeBlocksCount;
 
     private final long totalAllocations;
     private final long failedAllocations;
@@ -30,8 +34,12 @@ public final class MemoryStatistic {
     private final long totalFrees;
     private final long failedFrees;
 
-    public MemoryStatistic(MemorySize usedSize, MemorySize freeSize, int usedBlocksCount, int freeBlocksCount,
-                           long totalAllocations, long failedAllocations, long totalFrees, long failedFrees) {
+    public MemoryStatistic(MetricsSnapshot metrics,
+                           MemorySize usedSize, MemorySize freeSize,
+                           long usedBlocksCount, long freeBlocksCount,
+                           long totalAllocations, long failedAllocations,
+                           long totalFrees, long failedFrees) {
+        this.metrics = metrics;
         this.usedSize = usedSize;
         this.freeSize = freeSize;
         this.usedBlocksCount = usedBlocksCount;
@@ -42,6 +50,10 @@ public final class MemoryStatistic {
         this.failedFrees = failedFrees;
     }
 
+    public MetricsSnapshot getMetrics() {
+        return metrics;
+    }
+
     public MemorySize getUsedSize() {
         return usedSize;
     }
@@ -50,11 +62,11 @@ public final class MemoryStatistic {
         return freeSize;
     }
 
-    public int getUsedBlocksCount() {
+    public long getUsedBlocksCount() {
         return usedBlocksCount;
     }
 
-    public int getFreeBlocksCount() {
+    public long getFreeBlocksCount() {
         return freeBlocksCount;
     }
 

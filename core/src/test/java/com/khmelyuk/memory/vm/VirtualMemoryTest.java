@@ -1,6 +1,6 @@
 package com.khmelyuk.memory.vm;
 
-import com.khmelyuk.memory.MemorySize;
+import com.khmelyuk.memory.metrics.MetricsSnapshot;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -113,12 +113,12 @@ public abstract class VirtualMemoryTest {
         Assert.assertNotNull(block1);
         Assert.assertNotNull(block2);
 
-        VirtualMemoryStatistic stats = memory.getStatistic();
+        MetricsSnapshot metrics = memory.getMetrics();
 
-        Assert.assertEquals(MemorySize.bytes(20), stats.getFreeSize());
-        Assert.assertEquals(MemorySize.bytes(80), stats.getUsedSize());
-        Assert.assertEquals(1, stats.getFreeBlocksCount());
-        Assert.assertEquals(2, stats.getUsedBlocksCount());
+        Assert.assertEquals(20L, metrics.get("freeSize").longValue());
+        Assert.assertEquals(80L, metrics.get("usedSize").longValue());
+        Assert.assertEquals(1L, metrics.get("freeBlocksCount").longValue());
+        Assert.assertEquals(2L, metrics.get("usedBlocksCount").longValue());
     }
 
 }

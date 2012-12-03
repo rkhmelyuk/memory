@@ -1,15 +1,14 @@
 package com.khmelyuk.memory.vm.table;
 
-import com.khmelyuk.memory.MemorySize;
 import com.khmelyuk.memory.OutOfBoundException;
-import com.khmelyuk.memory.vm.VirtualMemoryStatistic;
+import com.khmelyuk.memory.metrics.Metrics;
+import com.khmelyuk.memory.metrics.MetricsSnapshot;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -24,17 +23,13 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     private final ReadWriteLock usedLock = new ReentrantReadWriteLock();
     private final ReadWriteLock freeLock = new ReentrantReadWriteLock();
 
-    private final LinkedList<TableBlock> used = new LinkedList<TableBlock>();
-    private final LinkedList<TableBlock> free = new LinkedList<TableBlock>();
+    private final LinkedList<TableBlock> used = new LinkedList<>();
+    private final LinkedList<TableBlock> free = new LinkedList<>();
 
     private final AtomicInteger freeMemorySize;
     private final AtomicInteger usedMemorySize;
 
-    private final AtomicLong totalAllocations;
-    private final AtomicLong failedAllocations;
-
-    private final AtomicLong totalFrees;
-    private final AtomicLong failedFrees;
+    private final Metrics metrics;
 
     public LinkedVirtualMemoryTable(int size) {
         free.add(new TableBlock(0, size));
@@ -42,11 +37,15 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         usedMemorySize = new AtomicInteger(0);
         freeMemorySize = new AtomicInteger(size);
 
-        totalAllocations = new AtomicLong(0);
-        failedAllocations = new AtomicLong(0);
-
-        totalFrees = new AtomicLong(0);
-        failedFrees = new AtomicLong(0);
+        // add metrics
+        metrics = new Metrics();
+        metrics.addMetric("totalAllocations");
+        metrics.addMetric("failedAllocations");
+        metrics.addMetric("totalFrees");
+        metrics.addMetric("failedFrees");
+        metrics.addMetric("increases");
+        metrics.addMetric("loopsToFindFitBlock");
+        metrics.addMetric("fragmentation");
     }
 
     @Override
@@ -60,15 +59,16 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     }
 
     @Override
-    public void fillStatisticInformation(VirtualMemoryStatistic statistic) {
-        statistic.setFreeBlocksCount(free.size());
-        statistic.setUsedBlocksCount(used.size());
-        statistic.setFreeSize(MemorySize.bytes(freeMemorySize.get()));
-        statistic.setUsedSize(MemorySize.bytes(usedMemorySize.get()));
-        statistic.setTotalAllocations(totalAllocations.get());
-        statistic.setFailedAllocations(failedAllocations.get());
-        statistic.setTotalFrees(totalFrees.get());
-        statistic.setFailedFrees(failedFrees.get());
+    public MetricsSnapshot getMetrics() {
+        final MetricsSnapshot snapshot = metrics.snapshot();
+
+        // additional metrics
+        snapshot.put("freeSize", freeMemorySize.longValue());
+        snapshot.put("usedSize", usedMemorySize.longValue());
+        snapshot.put("freeBlocksCount", (long) free.size());
+        snapshot.put("usedBlocksCount", (long) used.size());
+
+        return snapshot;
     }
 
     @Override
@@ -77,9 +77,9 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             throw new OutOfBoundException("Size can't be negative or be zero: " + size);
         }
 
-        totalAllocations.incrementAndGet();
+        metrics.increment("totalAllocations");
 
-        final TableBlock freeBlock = getBlockToAllocate(size);
+        final TableBlock freeBlock = findBlockToAllocateFrom(size);
         if (freeBlock != null) {
             final TableBlock result;
             try {
@@ -87,10 +87,12 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                 if (freeBlock.getSize() == size) {
                     freeBlock.resize(0, 0);
                     removeBlock(free, freeBlock, freeLock);
+                    metrics.decrement("fragmentation");
                 } else {
                     freeBlock.resize(
                             freeBlock.getAddress() + size,
                             freeBlock.getSize() - size);
+                    metrics.increment("fragmentation");
                 }
                 freeMemorySize.addAndGet(-size);
             } finally {
@@ -104,12 +106,12 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
             return result;
         }
-        failedAllocations.incrementAndGet();
+        metrics.increment("failedAllocations");
 
         return null;
     }
 
-    protected TableBlock getBlockToAllocate(int size) {
+    protected TableBlock findBlockToAllocateFrom(int size) {
 
         boolean repeat;
         do {
@@ -133,6 +135,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             } finally {
                 freeLock.readLock().unlock();
             }
+            metrics.increment("loopsToFindFitBlock");
         }
         while (repeat);
 
@@ -145,7 +148,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             return false;
         }
 
-        totalFrees.incrementAndGet();
+        metrics.increment("totalFrees");
 
         TableBlock tableBlock = getSimilarBlock(used, block, usedLock);
         if (tableBlock != null) {
@@ -166,7 +169,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             }
         }
 
-        failedFrees.incrementAndGet();
+        metrics.increment("failedFrees");
 
         return false;
     }
@@ -179,6 +182,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     protected void addFreeBlock(TableBlock block) {
         if (!extendFreeMemory(block)) {
             insertBlock(free, block, freeLock);
+            metrics.increment("fragmentation");
         }
     }
 
@@ -245,19 +249,23 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                 removeBlock(free, head, freeLock);
 
                 head.unlock();
+
+                // we want to decrease fragmentation twice for this case, because we merged 3 blocks into 1
+                // so this is decrement #1 and the next is at the end of method
+                metrics.decrement("fragmentation");
             }
 
             tail.unlock();
-
-            return true;
         } else if (head != null) {
             head.resize(blockAddress, block.getSize() + head.getSize());
             head.unlock();
-
-            return true;
+        } else {
+            // nothing was changed
+            return false;
         }
 
-        return false;
+        metrics.decrement("fragmentation");
+        return true;
     }
 
     @Override
@@ -274,10 +282,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     public void reset(int size) {
         // reset allocations/frees count first, as it's not used
         // for any functionality but to show information
-        totalAllocations.set(0L);
-        failedAllocations.set(0L);
-        totalFrees.set(0L);
-        failedFrees.set(0L);
+        metrics.reset();
 
         try {
             usedLock.writeLock().lock();
@@ -291,7 +296,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             freeLock.writeLock().lock();
             free.clear();
             free.add(new TableBlock(0, size));
-            freeMemorySize.set(0);
+            freeMemorySize.set(size);
         } finally {
             freeLock.writeLock().unlock();
         }
@@ -316,6 +321,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         int incSize = size - totalSize;
         addFreeBlock(new TableBlock(totalSize, incSize));
         freeMemorySize.addAndGet(incSize);
+        metrics.increment("increases");
     }
 
     /**
