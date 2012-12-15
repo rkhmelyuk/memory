@@ -16,7 +16,7 @@ import java.util.Map;
 public final class MetricsSnapshotBuilder {
 
     private List<MetricsSnapshot> snapshots = new ArrayList<>();
-    private Map<String, Long> extension = new HashMap<>();
+    private Map<String, Metric> extension = new HashMap<>();
 
     /**
      * Add metrics to the snapshot.
@@ -37,7 +37,13 @@ public final class MetricsSnapshotBuilder {
      * @return the ref to this builder.
      */
     public MetricsSnapshotBuilder merge(MetricsSnapshot metrics) {
-        this.snapshots.add(metrics);
+        if (metrics instanceof CompoundMetricsSnapshot) {
+            // TODO - stupid hack, should better return to copy to single map only?!
+            CompoundMetricsSnapshot compoundMetrics = (CompoundMetricsSnapshot) metrics;
+            this.snapshots.addAll(compoundMetrics.getSnapshots());
+        } else {
+            this.snapshots.add(metrics);
+        }
         return this;
     }
 
@@ -49,7 +55,7 @@ public final class MetricsSnapshotBuilder {
      * @return the ref to this builder.
      */
     public MetricsSnapshotBuilder put(String metric, long value) {
-        this.extension.put(metric, value);
+        this.extension.put(metric, new ValueMetric(value));
         return this;
     }
 
@@ -59,7 +65,7 @@ public final class MetricsSnapshotBuilder {
      * @return the metrics snapshot.
      */
     public MetricsSnapshot build() {
-        MetricsSnapshot result = null;
+        final MetricsSnapshot result;
         if (snapshots.size() == 1 && extension.size() == 0) {
             result = snapshots.get(0);
         } else if (snapshots.size() == 0) {

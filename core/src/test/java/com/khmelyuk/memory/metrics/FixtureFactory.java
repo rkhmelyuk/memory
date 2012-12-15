@@ -9,18 +9,18 @@ class FixtureFactory {
 
     public static Metrics createMetrics() {
         Metrics metrics = new Metrics();
-        metrics.addMetric("metric1", 1);
-        metrics.addMetric("metric2", 2);
-        metrics.addMetric("metric3", 3);
+        metrics.addValueMetric("metric1", 1);
+        metrics.addValueMetric("metric2", 2);
+        metrics.addValueMetric("metric3", 3);
 
         return metrics;
     }
 
     public static Metrics createOtherMetrics() {
         Metrics metrics = new Metrics();
-        metrics.addMetric("otherMetric1", 1);
-        metrics.addMetric("otherMetric2", 2);
-        metrics.addMetric("otherMetric3", 3);
+        metrics.addValueMetric("otherMetric1", 1);
+        metrics.addValueMetric("otherMetric2", 2);
+        metrics.addValueMetric("otherMetric3", 3);
 
         return metrics;
     }

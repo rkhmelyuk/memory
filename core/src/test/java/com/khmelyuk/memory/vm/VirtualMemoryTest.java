@@ -115,10 +115,10 @@ public abstract class VirtualMemoryTest {
 
         MetricsSnapshot metrics = memory.getMetrics();
 
-        Assert.assertEquals(20L, metrics.get("freeSize").longValue());
-        Assert.assertEquals(80L, metrics.get("usedSize").longValue());
-        Assert.assertEquals(1L, metrics.get("freeBlocksCount").longValue());
-        Assert.assertEquals(2L, metrics.get("usedBlocksCount").longValue());
+        Assert.assertEquals(20L, metrics.getValueMetric("freeSize").get());
+        Assert.assertEquals(80L, metrics.getValueMetric("usedSize").get());
+        Assert.assertEquals(1L, metrics.getValueMetric("freeBlocksCount").get());
+        Assert.assertEquals(2L, metrics.getValueMetric("usedBlocksCount").get());
     }
 
 }

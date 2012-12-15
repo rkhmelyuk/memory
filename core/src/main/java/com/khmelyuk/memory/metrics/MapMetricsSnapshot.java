@@ -14,9 +14,9 @@ import java.util.Set;
 @Immutable
 public final class MapMetricsSnapshot implements MetricsSnapshot {
 
-    private Map<String, Long> metrics;
+    private Map<String, Metric> metrics;
 
-    public MapMetricsSnapshot(Map<String, Long> metrics) {
+    public MapMetricsSnapshot(Map<String, Metric> metrics) {
         if (metrics != null) {
             this.metrics = Collections.unmodifiableMap(metrics);
         } else {
@@ -24,24 +24,30 @@ public final class MapMetricsSnapshot implements MetricsSnapshot {
         }
     }
 
+    @Override
     public Set<String> getMetrics() {
         return metrics.keySet();
     }
 
-    public Long get(String metric) {
-        return metrics.get(metric);
+    @Override
+    public ValueMetric getValueMetric(String metric) {
+        Metric result = metrics.get(metric);
+        if (result instanceof ValueMetric) {
+            return (ValueMetric) result;
+        }
+        return null;
     }
 
-    public long get(String metric, long defaultValue) {
-        Long value = get(metric);
-        return value != null ? value : defaultValue;
+    @Override
+    public TimerMetric getTimerMetric(String metric) {
+        Metric result = metrics.get(metric);
+        if (result instanceof TimerMetric) {
+            return (TimerMetric) result;
+        }
+        return null;
     }
 
-    public int getInt(String metric, int defaultValue) {
-        Long value = get(metric);
-        return value != null ? value.intValue() : defaultValue;
-    }
-
+    @Override
     public int size() {
         return metrics.size();
     }

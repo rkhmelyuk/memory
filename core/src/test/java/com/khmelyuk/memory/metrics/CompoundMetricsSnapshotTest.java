@@ -35,13 +35,13 @@ public class CompoundMetricsSnapshotTest {
         CompoundMetricsSnapshot snapshot = new CompoundMetricsSnapshot(
                 Arrays.asList(createMetricsSnapshot(), createOtherMetricsSnapshot()));
 
-        assertThat(snapshot.get("metric1"), is(1L));
-        assertThat(snapshot.get("metric2"), is(2L));
-        assertThat(snapshot.get("metric3"), is(3L));
-        assertThat(snapshot.get("otherMetric1"), is(1L));
-        assertThat(snapshot.get("otherMetric2"), is(2L));
-        assertThat(snapshot.get("otherMetric3"), is(3L));
-        assertThat(snapshot.get("unknownMetric"), is(nullValue()));
+        assertThat(snapshot.getValueMetric("metric1").get(), is(1L));
+        assertThat(snapshot.getValueMetric("metric2").get(), is(2L));
+        assertThat(snapshot.getValueMetric("metric3").get(), is(3L));
+        assertThat(snapshot.getValueMetric("otherMetric1").get(), is(1L));
+        assertThat(snapshot.getValueMetric("otherMetric2").get(), is(2L));
+        assertThat(snapshot.getValueMetric("otherMetric3").get(), is(3L));
+        assertThat(snapshot.getValueMetric("unknownMetric"), is(nullValue()));
     }
 
     @Test

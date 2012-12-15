@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Represents a set of metrics within single entity (this could be Memory, VMT etc.)
@@ -19,7 +18,18 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public final class Metrics {
 
-    private final ConcurrentMap<String, AtomicLong> metrics = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Metric> metrics = new ConcurrentHashMap<>();
+
+    /**
+     * Add a new timer metric. This used to calculate the time spend on some block of code.
+     * <p/>
+     * NOTE: at this moment it will add 2 different metrics - for count of examples and for avg value of them.
+     *
+     * @param name the metric name.
+     */
+    public void addTimerMetric(String name) {
+        addMetric(name, new TimerMetric());
+    }
 
     /**
      * Add a new metric with init value 0.
@@ -27,8 +37,8 @@ public final class Metrics {
      *
      * @param name the metric name.
      */
-    public void addMetric(String name) {
-        addMetric(name, 0L);
+    public void addValueMetric(String name) {
+        addValueMetric(name, 0L);
     }
 
     /**
@@ -38,12 +48,16 @@ public final class Metrics {
      * @param name      the metric name.
      * @param initValue the init value for metric.
      */
-    public void addMetric(String name, long initValue) {
+    public void addValueMetric(String name, long initValue) {
+        addMetric(name, new ValueMetric(initValue));
+    }
+
+    private void addMetric(String name, Metric metric) {
         if (metrics.containsKey(name)) {
             throw new DuplicateMetricException(name);
         }
 
-        metrics.putIfAbsent(name, new AtomicLong(initValue));
+        metrics.putIfAbsent(name, metric);
     }
 
     /**
@@ -57,6 +71,27 @@ public final class Metrics {
     }
 
     /**
+     * Gets the timer metric by name.
+     *
+     * @param name the metric name.
+     * @return the timer metric.
+     */
+    public TimerMetric getTimerMetric(String name) {
+        return asTimeMetric(getMetric(name));
+    }
+
+    /**
+     * Gets the value metric by name.
+     *
+     * @param name the metric name.
+     * @return the value metric.
+     */
+    public ValueMetric getValueMetric(String name) {
+        return asValueMetric(getMetric(name));
+    }
+
+
+    /**
      * Gets the metric value.
      * If such metric not exists, then throws exception.
      *
@@ -64,7 +99,7 @@ public final class Metrics {
      * @return the metric value.
      */
     public long get(String metric) {
-        return getValue(metric).get();
+        return asValueMetric(getMetric(metric)).get();
     }
 
     /**
@@ -73,7 +108,7 @@ public final class Metrics {
      * @param metric the metric name.
      */
     public void increment(String metric) {
-        getValue(metric).incrementAndGet();
+        asValueMetric(getMetric(metric)).increment();
     }
 
     /**
@@ -82,7 +117,7 @@ public final class Metrics {
      * @param metric the metric name.
      */
     public void decrement(String metric) {
-        getValue(metric).decrementAndGet();
+        asValueMetric(getMetric(metric)).decrement();
     }
 
     /**
@@ -92,7 +127,17 @@ public final class Metrics {
      * @param value  the metric value.
      */
     public void mark(String metric, long value) {
-        getValue(metric).set(value);
+        asValueMetric(getMetric(metric)).update(value);
+    }
+
+    /**
+     * Gets the context for specified timer metric. This context can be used to gather single block metric information.
+     *
+     * @param name the timer metric name.
+     * @return the created time context.
+     */
+    public TimeContext getTimer(String name) {
+        return new TimeContext(asTimeMetric(getMetric(name)));
     }
 
     /**
@@ -100,8 +145,8 @@ public final class Metrics {
      * It's not atomic operation, each metric is thrown to 0 one by one.
      */
     public void reset() {
-        for (AtomicLong each : metrics.values()) {
-            each.set(0L);
+        for (Metric each : metrics.values()) {
+            each.reset();
         }
     }
 
@@ -111,18 +156,26 @@ public final class Metrics {
      * @return the current metrics shapshot.
      */
     public MetricsSnapshot snapshot() {
-        final Map<String, Long> map = new HashMap<>();
-        for (Map.Entry<String, AtomicLong> each : metrics.entrySet()) {
-            map.put(each.getKey(), each.getValue().get());
+        final Map<String, Metric> map = new HashMap<>();
+        for (Map.Entry<String, Metric> each : metrics.entrySet()) {
+            map.put(each.getKey(), each.getValue());
         }
         return new MapMetricsSnapshot(map);
     }
 
-    private AtomicLong getValue(String name) {
-        AtomicLong value = metrics.get(name);
-        if (value == null) {
+    private Metric getMetric(String name) {
+        Metric metric = metrics.get(name);
+        if (metric == null) {
             throw new MetricNotFoundException(name);
         }
-        return value;
+        return metric;
+    }
+
+    private TimerMetric asTimeMetric(Metric metric) {
+        return (TimerMetric) metric;
+    }
+
+    private ValueMetric asValueMetric(Metric metric) {
+        return (ValueMetric) metric;
     }
 }

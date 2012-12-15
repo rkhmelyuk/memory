@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 import static org.junit.matchers.JUnitMatchers.hasItem;
 
@@ -132,15 +133,15 @@ public class LinkedVirtualMemoryTableTest {
         final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
 
         MetricsSnapshot metrics = table.getMetrics();
-        assertThat(metrics.get("totalAllocations"), is(0L));
+        assertThat(metrics.getValueMetric("totalAllocations").get(), is(0L));
 
         table.allocate(100);
         metrics = table.getMetrics();
-        assertThat(metrics.get("totalAllocations"), is(1L));
+        assertThat(metrics.getValueMetric("totalAllocations").get(), is(1L));
 
         table.allocate(50);
         metrics = table.getMetrics();
-        assertThat(metrics.get("totalAllocations"), is(2L));
+        assertThat(metrics.getValueMetric("totalAllocations").get(), is(2L));
     }
 
     @Test
@@ -148,12 +149,12 @@ public class LinkedVirtualMemoryTableTest {
         final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
 
         MetricsSnapshot metrics = table.getMetrics();
-        assertThat(metrics.get("totalAllocations"), is(0L));
+        assertThat(metrics.getValueMetric("totalAllocations").get(), is(0L));
 
         table.allocate(300);
         metrics = table.getMetrics();
-        assertThat(metrics.get("totalAllocations"), is(1L));
-        assertThat(metrics.get("failedAllocations"), is(1L));
+        assertThat(metrics.getValueMetric("totalAllocations").get(), is(1L));
+        assertThat(metrics.getValueMetric("failedAllocations").get(), is(1L));
     }
 
     @Test
@@ -161,15 +162,15 @@ public class LinkedVirtualMemoryTableTest {
         final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
 
         MetricsSnapshot metrics = table.getMetrics();
-        assertThat(metrics.get("totalAllocations"), is(0L));
+        assertThat(metrics.getValueMetric("totalAllocations").get(), is(0L));
 
         table.free(table.allocate(100));
         metrics = table.getMetrics();
-        assertThat(metrics.get("totalFrees"), is(1L));
+        assertThat(metrics.getValueMetric("totalFrees").get(), is(1L));
 
         table.free(table.allocate(100));
         metrics = table.getMetrics();
-        assertThat(metrics.get("totalFrees"), is(2L));
+        assertThat(metrics.getValueMetric("totalFrees").get(), is(2L));
     }
 
     @Test
@@ -177,15 +178,15 @@ public class LinkedVirtualMemoryTableTest {
         final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
 
         MetricsSnapshot metrics = table.getMetrics();
-        assertThat(metrics.get("totalAllocations"), is(0L));
+        assertThat(metrics.getValueMetric("totalAllocations").get(), is(0L));
 
         Block block = table.allocate(100);
         assertTrue(table.free(block));
         assertFalse(table.free(block));
 
         metrics = table.getMetrics();
-        assertThat(metrics.get("totalFrees"), is(2L));
-        assertThat(metrics.get("failedFrees"), is(1L));
+        assertThat(metrics.getValueMetric("totalFrees").get(), is(2L));
+        assertThat(metrics.getValueMetric("failedFrees").get(), is(1L));
     }
 
     @Test
@@ -195,26 +196,30 @@ public class LinkedVirtualMemoryTableTest {
         table.allocate(20);
         MetricsSnapshot metrics = table.getMetrics();
 
-        assertThat(metrics.get("totalAllocations"), is(1L));
-        assertThat(metrics.get("failedAllocations"), is(0L));
-        assertThat(metrics.get("totalFrees"), is(0L));
-        assertThat(metrics.get("failedFrees"), is(0L));
-        assertThat(metrics.get("freeBlocksCount"), is(1L));
-        assertThat(metrics.get("usedBlocksCount"), is(1L));
-        assertThat(metrics.get("freeSize"), is(180L));
-        assertThat(metrics.get("usedSize"), is(20L));
+        assertThat(metrics.getValueMetric("totalAllocations").get(), is(1L));
+        assertThat(metrics.getValueMetric("failedAllocations").get(), is(0L));
+        assertThat(metrics.getValueMetric("totalFrees").get(), is(0L));
+        assertThat(metrics.getValueMetric("failedFrees").get(), is(0L));
+        assertThat(metrics.getValueMetric("freeBlocksCount").get(), is(1L));
+        assertThat(metrics.getValueMetric("usedBlocksCount").get(), is(1L));
+        assertThat(metrics.getValueMetric("freeSize").get(), is(180L));
+        assertThat(metrics.getValueMetric("usedSize").get(), is(20L));
+        assertThat(metrics.getTimerMetric("vmtable.freeTime").getCount(), is(0L));
+        assertThat(metrics.getTimerMetric("vmtable.allocationTime").getCount(), not(0L));
 
         table.reset(0);
         metrics = table.getMetrics();
 
-        assertThat(metrics.get("totalAllocations"), is(0L));
-        assertThat(metrics.get("failedAllocations"), is(0L));
-        assertThat(metrics.get("totalFrees"), is(0L));
-        assertThat(metrics.get("failedFrees"), is(0L));
-        assertThat(metrics.get("freeBlocksCount"), is(1L));
-        assertThat(metrics.get("usedBlocksCount"), is(0L));
-        assertThat(metrics.get("freeSize"), is(0L));
-        assertThat(metrics.get("usedSize"), is(0L));
+        assertThat(metrics.getValueMetric("totalAllocations").get(), is(0L));
+        assertThat(metrics.getValueMetric("failedAllocations").get(), is(0L));
+        assertThat(metrics.getValueMetric("totalFrees").get(), is(0L));
+        assertThat(metrics.getValueMetric("failedFrees").get(), is(0L));
+        assertThat(metrics.getValueMetric("freeBlocksCount").get(), is(1L));
+        assertThat(metrics.getValueMetric("usedBlocksCount").get(), is(0L));
+        assertThat(metrics.getValueMetric("freeSize").get(), is(0L));
+        assertThat(metrics.getValueMetric("usedSize").get(), is(0L));
+        assertThat(metrics.getTimerMetric("vmtable.freeTime").getCount(), is(0L));
+        assertThat(metrics.getTimerMetric("vmtable.allocationTime").getCount(), is(0L));
     }
 
     @Test
@@ -222,10 +227,10 @@ public class LinkedVirtualMemoryTableTest {
         final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
 
         table.allocate(100);
-        assertThat(table.getMetrics().get("fragmentation"), is(1L));
+        assertThat(table.getMetrics().getValueMetric("fragmentation").get(), is(1L));
 
         table.allocate(100);
-        assertThat(table.getMetrics().get("fragmentation"), is(0L));
+        assertThat(table.getMetrics().getValueMetric("fragmentation").get(), is(0L));
     }
 
     @Test
@@ -233,20 +238,20 @@ public class LinkedVirtualMemoryTableTest {
         final LinkedVirtualMemoryTable table = new LinkedVirtualMemoryTable(200);
 
         Block block = table.allocate(100);
-        assertThat(table.getMetrics().get("fragmentation"), is(1L));
+        assertThat(table.getMetrics().getValueMetric("fragmentation").get(), is(1L));
 
         table.free(block);
-        assertThat(table.getMetrics().get("fragmentation"), is(0L));
+        assertThat(table.getMetrics().getValueMetric("fragmentation").get(), is(0L));
 
         block = table.allocate(100);
         Block block1 = table.allocate(50);
-        assertThat(table.getMetrics().get("fragmentation"), is(2L));
+        assertThat(table.getMetrics().getValueMetric("fragmentation").get(), is(2L));
 
         table.free(block1);
-        assertThat(table.getMetrics().get("fragmentation"), is(1L));
+        assertThat(table.getMetrics().getValueMetric("fragmentation").get(), is(1L));
 
         table.free(block);
-        assertThat(table.getMetrics().get("fragmentation"), is(0L));
+        assertThat(table.getMetrics().getValueMetric("fragmentation").get(), is(0L));
     }
 
     @Test
@@ -261,6 +266,8 @@ public class LinkedVirtualMemoryTableTest {
         assertThat(snapshot.getMetrics(), hasItem("increases"));
         assertThat(snapshot.getMetrics(), hasItem("loopsToFindFitBlock"));
         assertThat(snapshot.getMetrics(), hasItem("fragmentation"));
+        assertThat(snapshot.getMetrics(), hasItem("vmtable.freeTime"));
+        assertThat(snapshot.getMetrics(), hasItem("vmtable.allocationTime"));
     }
 
 }

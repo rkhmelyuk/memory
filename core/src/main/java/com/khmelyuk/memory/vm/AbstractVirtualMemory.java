@@ -1,7 +1,9 @@
 package com.khmelyuk.memory.vm;
 
 import com.khmelyuk.memory.OutOfBoundException;
+import com.khmelyuk.memory.metrics.Metrics;
 import com.khmelyuk.memory.metrics.MetricsSnapshot;
+import com.khmelyuk.memory.metrics.MetricsSnapshotBuilder;
 import com.khmelyuk.memory.vm.storage.Storage;
 import com.khmelyuk.memory.vm.table.VirtualMemoryTable;
 
@@ -21,10 +23,16 @@ public abstract class AbstractVirtualMemory<S extends Storage> implements Virtua
 
     protected FreeEventListener freeEventListener;
 
+    protected final Metrics metrics;
+
     protected AbstractVirtualMemory(S storage, VirtualMemoryTable table) {
         this.storage = storage;
         this.table = table;
         this.size = storage.size();
+
+        this.metrics = new Metrics();
+        metrics.addTimerMetric("allocationTime");
+        metrics.addTimerMetric("freeTime");
     }
 
     public int size() {
@@ -64,8 +72,7 @@ public abstract class AbstractVirtualMemory<S extends Storage> implements Virtua
 
     @Override
     public MetricsSnapshot getMetrics() {
-        // TODO - add own metrics here
-        return table.getMetrics();
+        return new MetricsSnapshotBuilder().fromMetrics(metrics).merge(table.getMetrics()).build();
     }
 
     // ---------------------------------------------- Read/write support

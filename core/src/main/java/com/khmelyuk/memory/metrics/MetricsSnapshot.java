@@ -16,11 +16,21 @@ public interface MetricsSnapshot {
      */
     Set<String> getMetrics();
 
-    Long get(String metric);
+    /**
+     * Gets the value metric.
+     *
+     * @param metric the metric name.
+     * @return the found value metric or null.
+     */
+    ValueMetric getValueMetric(String metric);
 
-    long get(String metric, long defaultValue);
-
-    int getInt(String metric, int defaultValue);
+    /**
+     * Gets the timer metric.
+     *
+     * @param metric the metric name.
+     * @return the found timer metric or null.
+     */
+    TimerMetric getTimerMetric(String metric);
 
     int size();
 

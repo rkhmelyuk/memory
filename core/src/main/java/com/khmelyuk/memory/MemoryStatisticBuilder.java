@@ -16,17 +16,17 @@ class MemoryStatisticBuilder {
     }
 
     public MemoryStatistic build() {
-        MemorySize freeSize = MemorySize.bytes(metrics.getInt("freeSize", 0));
-        MemorySize usedSize = MemorySize.bytes(metrics.getInt("usedSize", 0));
+        MemorySize freeSize = MemorySize.bytes((int) metrics.getValueMetric("freeSize").get());
+        MemorySize usedSize = MemorySize.bytes((int) metrics.getValueMetric("usedSize").get());
 
-        long usedBlocksCount = metrics.get("usedBlocksCount", 0);
-        long freeBlocksCount = metrics.get("freeBlocksCount", 0);
+        long usedBlocksCount = metrics.getValueMetric("usedBlocksCount").get();
+        long freeBlocksCount = metrics.getValueMetric("freeBlocksCount").get();
 
-        long totalAllocations = metrics.get("totalAllocations", 0);
-        long failedAllocations = metrics.get("failedAllocations", 0);
+        long totalAllocations = metrics.getValueMetric("totalAllocations").get();
+        long failedAllocations = metrics.getValueMetric("failedAllocations").get();
 
-        long totalFrees = metrics.get("totalFrees", 0);
-        long failedFrees = metrics.get("failedFrees", 0);
+        long totalFrees = metrics.getValueMetric("totalFrees").get();
+        long failedFrees = metrics.getValueMetric("failedFrees").get();
 
         return new MemoryStatistic(
                 usedSize, freeSize,

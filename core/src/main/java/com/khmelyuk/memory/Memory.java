@@ -25,7 +25,7 @@ public class Memory implements Monitorable {
         this.vm = vm;
 
         metrics = new Metrics();
-        metrics.addMetric("spaces");
+        metrics.addValueMetric("spaces");
 
         freeSpaceListener = new FreeSpaceListener() {
             public void onFreeSpace(Space space) {
@@ -105,7 +105,7 @@ public class Memory implements Monitorable {
     }
 
     /**
-     * Return the metrics snapshot.
+     * Return the metrics information.
      *
      * @return the metrics information.
      */

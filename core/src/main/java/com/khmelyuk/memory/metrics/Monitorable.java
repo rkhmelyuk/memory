@@ -10,7 +10,7 @@ public interface Monitorable {
 
     /**
      * Gets the metrics information.
-     * This method shouldn't return {code null}.
+     * This method shouldn't return {@code null}.
      *
      * @return the metrics information.
      */

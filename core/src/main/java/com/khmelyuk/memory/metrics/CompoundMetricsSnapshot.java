@@ -2,6 +2,7 @@ package com.khmelyuk.memory.metrics;
 
 import com.khmelyuk.memory.annotation.Immutable;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,6 +21,10 @@ class CompoundMetricsSnapshot implements MetricsSnapshot {
         this.snapshots = snapshots;
     }
 
+    public List<MetricsSnapshot> getSnapshots() {
+        return Collections.unmodifiableList(snapshots);
+    }
+
     @Override
     public Set<String> getMetrics() {
         Set<String> result = new HashSet<>();
@@ -30,9 +35,9 @@ class CompoundMetricsSnapshot implements MetricsSnapshot {
     }
 
     @Override
-    public Long get(String metric) {
+    public ValueMetric getValueMetric(String metric) {
         for (MetricsSnapshot each : snapshots) {
-            Long value = each.get(metric);
+            ValueMetric value = each.getValueMetric(metric);
             if (value != null) {
                 return value;
             }
@@ -40,14 +45,15 @@ class CompoundMetricsSnapshot implements MetricsSnapshot {
         return null;
     }
 
-    public long get(String metric, long defaultValue) {
-        Long value = get(metric);
-        return value != null ? value : defaultValue;
-    }
-
-    public int getInt(String metric, int defaultValue) {
-        Long value = get(metric);
-        return value != null ? value.intValue() : defaultValue;
+    @Override
+    public TimerMetric getTimerMetric(String metric) {
+        for (MetricsSnapshot each : snapshots) {
+            TimerMetric value = each.getTimerMetric(metric);
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
     }
 
     @Override

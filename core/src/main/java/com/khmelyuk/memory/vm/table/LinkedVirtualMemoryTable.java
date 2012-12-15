@@ -4,6 +4,7 @@ import com.khmelyuk.memory.OutOfBoundException;
 import com.khmelyuk.memory.metrics.Metrics;
 import com.khmelyuk.memory.metrics.MetricsSnapshot;
 import com.khmelyuk.memory.metrics.MetricsSnapshotBuilder;
+import com.khmelyuk.memory.metrics.TimeContext;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -40,13 +41,15 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
         // add metrics
         metrics = new Metrics();
-        metrics.addMetric("totalAllocations");
-        metrics.addMetric("failedAllocations");
-        metrics.addMetric("totalFrees");
-        metrics.addMetric("failedFrees");
-        metrics.addMetric("increases");
-        metrics.addMetric("loopsToFindFitBlock");
-        metrics.addMetric("fragmentation");
+        metrics.addValueMetric("totalAllocations");
+        metrics.addValueMetric("failedAllocations");
+        metrics.addValueMetric("totalFrees");
+        metrics.addValueMetric("failedFrees");
+        metrics.addValueMetric("increases");
+        metrics.addValueMetric("loopsToFindFitBlock");
+        metrics.addValueMetric("fragmentation");
+        metrics.addTimerMetric("vmtable.allocationTime");
+        metrics.addTimerMetric("vmtable.freeTime");
     }
 
     @Override
@@ -83,6 +86,9 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
         metrics.increment("totalAllocations");
 
+        TimeContext timer = metrics.getTimer("vmtable.allocationTime");
+        timer.start();
+
         final TableBlock freeBlock = findBlockToAllocateFrom(size);
         if (freeBlock != null) {
             final TableBlock result;
@@ -108,8 +114,14 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
             usedMemorySize.addAndGet(size);
 
+            timer.stop();
+
             return result;
         }
+
+        timer.stop();
+
+
         metrics.increment("failedAllocations");
 
         return null;
@@ -154,6 +166,9 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
         metrics.increment("totalFrees");
 
+        TimeContext timer = metrics.getTimer("vmtable.freeTime");
+        timer.start();
+
         TableBlock tableBlock = getSimilarBlock(used, block, usedLock);
         if (tableBlock != null) {
             if (removeBlock(used, tableBlock, usedLock)) {
@@ -169,9 +184,13 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                 tableBlock.resize(0, 0);
                 tableBlock.unlock();
 
+                timer.stop();
+
                 return true;
             }
         }
+
+        timer.stop();
 
         metrics.increment("failedFrees");
 

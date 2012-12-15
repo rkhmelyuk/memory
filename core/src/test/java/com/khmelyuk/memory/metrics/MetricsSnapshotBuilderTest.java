@@ -22,10 +22,11 @@ public class MetricsSnapshotBuilderTest {
         MetricsSnapshot snapshot = builder.fromMetrics(createMetrics()).build();
 
         assertThat(snapshot.size(), is(3));
-        assertThat(snapshot.get("metric1"), is(1L));
-        assertThat(snapshot.get("metric2"), is(2L));
-        assertThat(snapshot.get("metric3"), is(3L));
-        assertThat(snapshot.get("metric4"), nullValue());
+        assertThat(snapshot.getValueMetric("metric1").get(), is(1L));
+        assertThat(snapshot.getValueMetric("metric2").get(), is(2L));
+        assertThat(snapshot.getValueMetric("metric3").get(), is(3L));
+        assertThat(snapshot.getValueMetric("metric4"), nullValue());
+        assertThat(snapshot.getTimerMetric("timer1"), nullValue());
     }
 
     @Test
@@ -33,10 +34,10 @@ public class MetricsSnapshotBuilderTest {
         MetricsSnapshotBuilder builder = new MetricsSnapshotBuilder();
         MetricsSnapshot snapshot = builder.fromMetrics(createMetrics()).put("metric4", 4L).build();
 
-        assertThat(snapshot.get("metric1"), is(1L));
-        assertThat(snapshot.get("metric2"), is(2L));
-        assertThat(snapshot.get("metric3"), is(3L));
-        assertThat(snapshot.get("metric4"), is(4L));
+        assertThat(snapshot.getValueMetric("metric1").get(), is(1L));
+        assertThat(snapshot.getValueMetric("metric2").get(), is(2L));
+        assertThat(snapshot.getValueMetric("metric3").get(), is(3L));
+        assertThat(snapshot.getValueMetric("metric4").get(), is(4L));
     }
 
     @Test
@@ -44,7 +45,7 @@ public class MetricsSnapshotBuilderTest {
         MetricsSnapshotBuilder builder = new MetricsSnapshotBuilder();
         MetricsSnapshot snapshot = builder.put("metric1", 1L).build();
 
-        assertThat(snapshot.get("metric1"), is(1L));
+        assertThat(snapshot.getValueMetric("metric1").get(), is(1L));
     }
 
     @Test
@@ -54,12 +55,12 @@ public class MetricsSnapshotBuilderTest {
                 .fromMetrics(createMetrics())
                 .merge(createOtherMetricsSnapshot()).build();
 
-        assertThat(snapshot.get("metric1"), is(1L));
-        assertThat(snapshot.get("metric2"), is(2L));
-        assertThat(snapshot.get("metric3"), is(3L));
-        assertThat(snapshot.get("otherMetric1"), is(1L));
-        assertThat(snapshot.get("otherMetric2"), is(2L));
-        assertThat(snapshot.get("otherMetric3"), is(3L));
+        assertThat(snapshot.getValueMetric("metric1").get(), is(1L));
+        assertThat(snapshot.getValueMetric("metric2").get(), is(2L));
+        assertThat(snapshot.getValueMetric("metric3").get(), is(3L));
+        assertThat(snapshot.getValueMetric("otherMetric1").get(), is(1L));
+        assertThat(snapshot.getValueMetric("otherMetric2").get(), is(2L));
+        assertThat(snapshot.getValueMetric("otherMetric3").get(), is(3L));
     }
 
     @Test
@@ -70,13 +71,13 @@ public class MetricsSnapshotBuilderTest {
                 .merge(createOtherMetricsSnapshot())
                 .put("metric4", 4).build();
 
-        assertThat(snapshot.get("metric1"), is(1L));
-        assertThat(snapshot.get("metric2"), is(2L));
-        assertThat(snapshot.get("metric3"), is(3L));
-        assertThat(snapshot.get("metric4"), is(4L));
-        assertThat(snapshot.get("otherMetric1"), is(1L));
-        assertThat(snapshot.get("otherMetric2"), is(2L));
-        assertThat(snapshot.get("otherMetric3"), is(3L));
+        assertThat(snapshot.getValueMetric("metric1").get(), is(1L));
+        assertThat(snapshot.getValueMetric("metric2").get(), is(2L));
+        assertThat(snapshot.getValueMetric("metric3").get(), is(3L));
+        assertThat(snapshot.getValueMetric("metric4").get(), is(4L));
+        assertThat(snapshot.getValueMetric("otherMetric1").get(), is(1L));
+        assertThat(snapshot.getValueMetric("otherMetric2").get(), is(2L));
+        assertThat(snapshot.getValueMetric("otherMetric3").get(), is(3L));
     }
 
 }
