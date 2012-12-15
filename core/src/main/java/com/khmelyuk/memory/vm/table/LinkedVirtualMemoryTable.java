@@ -48,6 +48,10 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         metrics.addValueMetric("vmtable.increases");
         metrics.addValueMetric("vmtable.loopsToFindFitBlock");
         metrics.addValueMetric("vmtable.fragmentation");
+        metrics.addValueMetric("vmtable.freeSize");
+        metrics.addValueMetric("vmtable.usedSize");
+        metrics.addValueMetric("vmtable.freeBlocksCount");
+        metrics.addValueMetric("vmtable.usedBlocksCount");
         metrics.addTimerMetric("vmtable.allocationTime");
         metrics.addTimerMetric("vmtable.freeTime");
     }
@@ -64,18 +68,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
     @Override
     public MetricsSnapshot getMetrics() {
-        final MetricsSnapshotBuilder builder = new MetricsSnapshotBuilder();
-
-        builder.fromMetrics(metrics);
-
-        // additional metrics
-        builder
-                .put("vmtable.freeSize", freeMemorySize.longValue())
-                .put("vmtable.usedSize", usedMemorySize.longValue())
-                .put("vmtable.freeBlocksCount", (long) free.size())
-                .put("vmtable.usedBlocksCount", (long) used.size());
-
-        return builder.build();
+        return new MetricsSnapshotBuilder().fromMetrics(metrics).build();
     }
 
     @Override
@@ -115,6 +108,10 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             usedMemorySize.addAndGet(size);
 
             timer.stop();
+            metrics.mark("vmtable.freeSize", freeMemorySize.longValue());
+            metrics.mark("vmtable.usedSize", usedMemorySize.longValue());
+            metrics.mark("vmtable.freeBlocksCount", free.size());
+            metrics.mark("vmtable.usedBlocksCount", used.size());
 
             return result;
         }
@@ -185,6 +182,11 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                 tableBlock.unlock();
 
                 timer.stop();
+
+                metrics.mark("vmtable.freeSize", freeMemorySize.longValue());
+                metrics.mark("vmtable.usedSize", usedMemorySize.longValue());
+                metrics.mark("vmtable.freeBlocksCount", free.size());
+                metrics.mark("vmtable.usedBlocksCount", used.size());
 
                 return true;
             }
