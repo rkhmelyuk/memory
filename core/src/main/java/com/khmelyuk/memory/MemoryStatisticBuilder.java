@@ -16,17 +16,17 @@ class MemoryStatisticBuilder {
     }
 
     public MemoryStatistic build() {
-        MemorySize freeSize = MemorySize.bytes((int) metrics.getValueMetric("freeSize").get());
-        MemorySize usedSize = MemorySize.bytes((int) metrics.getValueMetric("usedSize").get());
+        MemorySize freeSize = MemorySize.bytes((int) metrics.getValueMetric("vmtable.freeSize").get());
+        MemorySize usedSize = MemorySize.bytes((int) metrics.getValueMetric("vmtable.usedSize").get());
 
-        long usedBlocksCount = metrics.getValueMetric("usedBlocksCount").get();
-        long freeBlocksCount = metrics.getValueMetric("freeBlocksCount").get();
+        long usedBlocksCount = metrics.getValueMetric("vmtable.usedBlocksCount").get();
+        long freeBlocksCount = metrics.getValueMetric("vmtable.freeBlocksCount").get();
 
-        long totalAllocations = metrics.getValueMetric("totalAllocations").get();
-        long failedAllocations = metrics.getValueMetric("failedAllocations").get();
+        long totalAllocations = metrics.getValueMetric("vmtable.totalAllocations").get();
+        long failedAllocations = metrics.getValueMetric("vmtable.failedAllocations").get();
 
-        long totalFrees = metrics.getValueMetric("totalFrees").get();
-        long failedFrees = metrics.getValueMetric("failedFrees").get();
+        long totalFrees = metrics.getValueMetric("vmtable.totalFrees").get();
+        long failedFrees = metrics.getValueMetric("vmtable.failedFrees").get();
 
         return new MemoryStatistic(
                 usedSize, freeSize,

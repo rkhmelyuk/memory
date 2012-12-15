@@ -4,6 +4,7 @@ import com.khmelyuk.memory.OutOfBoundException;
 import com.khmelyuk.memory.metrics.Metrics;
 import com.khmelyuk.memory.metrics.MetricsSnapshot;
 import com.khmelyuk.memory.metrics.MetricsSnapshotBuilder;
+import com.khmelyuk.memory.metrics.TimeContext;
 import com.khmelyuk.memory.vm.storage.Storage;
 import com.khmelyuk.memory.vm.table.VirtualMemoryTable;
 
@@ -31,8 +32,8 @@ public abstract class AbstractVirtualMemory<S extends Storage> implements Virtua
         this.size = storage.size();
 
         this.metrics = new Metrics();
-        metrics.addTimerMetric("allocationTime");
-        metrics.addTimerMetric("freeTime");
+        metrics.addTimerMetric("vm.allocationTime");
+        metrics.addTimerMetric("vm.freeTime");
     }
 
     public int size() {
@@ -63,7 +64,10 @@ public abstract class AbstractVirtualMemory<S extends Storage> implements Virtua
     }
 
     public void free(VirtualMemoryBlock block) {
+        TimeContext timer = metrics.getTimer("vm.freeTime");
+        timer.start();
         table.free(block.getBlock());
+        timer.stop();
     }
 
     public void setFreeEventListener(FreeEventListener listener) {

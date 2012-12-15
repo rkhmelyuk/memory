@@ -4,6 +4,8 @@ import com.khmelyuk.memory.metrics.MetricsSnapshot;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.is;
+
 /**
  * Base test case for virtual memory implementations.
  *
@@ -115,10 +117,12 @@ public abstract class VirtualMemoryTest {
 
         MetricsSnapshot metrics = memory.getMetrics();
 
-        Assert.assertEquals(20L, metrics.getValueMetric("freeSize").get());
-        Assert.assertEquals(80L, metrics.getValueMetric("usedSize").get());
-        Assert.assertEquals(1L, metrics.getValueMetric("freeBlocksCount").get());
-        Assert.assertEquals(2L, metrics.getValueMetric("usedBlocksCount").get());
+        Assert.assertEquals(20L, metrics.getValueMetric("vmtable.freeSize").get());
+        Assert.assertEquals(80L, metrics.getValueMetric("vmtable.usedSize").get());
+        Assert.assertEquals(1L, metrics.getValueMetric("vmtable.freeBlocksCount").get());
+        Assert.assertEquals(2L, metrics.getValueMetric("vmtable.usedBlocksCount").get());
+        Assert.assertThat(metrics.getTimerMetric("vm.allocationTime").getCount(), is(2L));
+        Assert.assertThat(metrics.getTimerMetric("vm.freeTime").getCount(), is(0L));
     }
 
 }

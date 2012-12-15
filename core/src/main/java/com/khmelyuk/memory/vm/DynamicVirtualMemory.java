@@ -2,6 +2,7 @@ package com.khmelyuk.memory.vm;
 
 import com.khmelyuk.memory.OutOfBoundException;
 import com.khmelyuk.memory.OutOfMemoryException;
+import com.khmelyuk.memory.metrics.TimeContext;
 import com.khmelyuk.memory.vm.storage.DynamicStorage;
 import com.khmelyuk.memory.vm.table.Block;
 import com.khmelyuk.memory.vm.table.VirtualMemoryTable;
@@ -36,6 +37,9 @@ public class DynamicVirtualMemory extends AbstractVirtualMemory<DynamicStorage> 
             throw new OutOfBoundException();
         }
 
+        TimeContext timer = metrics.getTimer("vm.allocationTime");
+        timer.start();
+
         Block block = table.allocate(length);
 
         // if failed to allocate a block,
@@ -56,6 +60,8 @@ public class DynamicVirtualMemory extends AbstractVirtualMemory<DynamicStorage> 
             // throws exception if failed to allocate the block.
             throw new OutOfMemoryException();
         }
+
+        timer.stop();
 
         // returns the allocated VM block.
         return new VirtualMemoryBlock(this, block);

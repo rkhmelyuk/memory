@@ -2,6 +2,7 @@ package com.khmelyuk.memory.vm;
 
 import com.khmelyuk.memory.OutOfBoundException;
 import com.khmelyuk.memory.OutOfMemoryException;
+import com.khmelyuk.memory.metrics.TimeContext;
 import com.khmelyuk.memory.vm.storage.Storage;
 import com.khmelyuk.memory.vm.table.Block;
 import com.khmelyuk.memory.vm.table.VirtualMemoryTable;
@@ -23,10 +24,15 @@ public class FixedVirtualMemory extends AbstractVirtualMemory<Storage> {
             throw new OutOfBoundException();
         }
 
+        TimeContext timer = metrics.getTimer("vm.allocationTime");
+        timer.start();
+
         Block block = table.allocate(length);
         if (block == null) {
             throw new OutOfMemoryException();
         }
+
+        timer.stop();
 
         return new VirtualMemoryBlock(this, block);
     }

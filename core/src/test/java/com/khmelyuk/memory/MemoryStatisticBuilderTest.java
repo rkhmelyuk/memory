@@ -33,14 +33,14 @@ public class MemoryStatisticBuilderTest {
     private MetricsSnapshot createMetrics() {
         MetricsSnapshotBuilder builder = new MetricsSnapshotBuilder();
 
-        builder.put("freeSize", 100L);
-        builder.put("usedSize", 10L);
-        builder.put("freeBlocksCount", 10L);
-        builder.put("usedBlocksCount", 5L);
-        builder.put("totalAllocations", 5L);
-        builder.put("failedAllocations", 2L);
-        builder.put("totalFrees", 6L);
-        builder.put("failedFrees", 3L);
+        builder.put("vmtable.freeSize", 100L);
+        builder.put("vmtable.usedSize", 10L);
+        builder.put("vmtable.freeBlocksCount", 10L);
+        builder.put("vmtable.usedBlocksCount", 5L);
+        builder.put("vmtable.totalAllocations", 5L);
+        builder.put("vmtable.failedAllocations", 2L);
+        builder.put("vmtable.totalFrees", 6L);
+        builder.put("vmtable.failedFrees", 3L);
 
         return builder.build();
     }

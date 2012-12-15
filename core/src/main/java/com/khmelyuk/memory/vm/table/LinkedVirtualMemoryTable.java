@@ -41,13 +41,13 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
         // add metrics
         metrics = new Metrics();
-        metrics.addValueMetric("totalAllocations");
-        metrics.addValueMetric("failedAllocations");
-        metrics.addValueMetric("totalFrees");
-        metrics.addValueMetric("failedFrees");
-        metrics.addValueMetric("increases");
-        metrics.addValueMetric("loopsToFindFitBlock");
-        metrics.addValueMetric("fragmentation");
+        metrics.addValueMetric("vmtable.totalAllocations");
+        metrics.addValueMetric("vmtable.failedAllocations");
+        metrics.addValueMetric("vmtable.totalFrees");
+        metrics.addValueMetric("vmtable.failedFrees");
+        metrics.addValueMetric("vmtable.increases");
+        metrics.addValueMetric("vmtable.loopsToFindFitBlock");
+        metrics.addValueMetric("vmtable.fragmentation");
         metrics.addTimerMetric("vmtable.allocationTime");
         metrics.addTimerMetric("vmtable.freeTime");
     }
@@ -70,10 +70,10 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
         // additional metrics
         builder
-                .put("freeSize", freeMemorySize.longValue())
-                .put("usedSize", usedMemorySize.longValue())
-                .put("freeBlocksCount", (long) free.size())
-                .put("usedBlocksCount", (long) used.size());
+                .put("vmtable.freeSize", freeMemorySize.longValue())
+                .put("vmtable.usedSize", usedMemorySize.longValue())
+                .put("vmtable.freeBlocksCount", (long) free.size())
+                .put("vmtable.usedBlocksCount", (long) used.size());
 
         return builder.build();
     }
@@ -84,7 +84,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             throw new OutOfBoundException("Size can't be negative or be zero: " + size);
         }
 
-        metrics.increment("totalAllocations");
+        metrics.increment("vmtable.totalAllocations");
 
         TimeContext timer = metrics.getTimer("vmtable.allocationTime");
         timer.start();
@@ -97,12 +97,12 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                 if (freeBlock.getSize() == size) {
                     freeBlock.resize(0, 0);
                     removeBlock(free, freeBlock, freeLock);
-                    metrics.decrement("fragmentation");
+                    metrics.decrement("vmtable.fragmentation");
                 } else {
                     freeBlock.resize(
                             freeBlock.getAddress() + size,
                             freeBlock.getSize() - size);
-                    metrics.increment("fragmentation");
+                    metrics.increment("vmtable.fragmentation");
                 }
                 freeMemorySize.addAndGet(-size);
             } finally {
@@ -122,7 +122,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         timer.stop();
 
 
-        metrics.increment("failedAllocations");
+        metrics.increment("vmtable.failedAllocations");
 
         return null;
     }
@@ -151,7 +151,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             } finally {
                 freeLock.readLock().unlock();
             }
-            metrics.increment("loopsToFindFitBlock");
+            metrics.increment("vmtable.loopsToFindFitBlock");
         }
         while (repeat);
 
@@ -164,7 +164,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             return false;
         }
 
-        metrics.increment("totalFrees");
+        metrics.increment("vmtable.totalFrees");
 
         TimeContext timer = metrics.getTimer("vmtable.freeTime");
         timer.start();
@@ -192,7 +192,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
         timer.stop();
 
-        metrics.increment("failedFrees");
+        metrics.increment("vmtable.failedFrees");
 
         return false;
     }
@@ -205,7 +205,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
     protected void addFreeBlock(TableBlock block) {
         if (!extendFreeMemory(block)) {
             insertBlock(free, block, freeLock);
-            metrics.increment("fragmentation");
+            metrics.increment("vmtable.fragmentation");
         }
     }
 
@@ -275,7 +275,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
                 // we want to decrease fragmentation twice for this case, because we merged 3 blocks into 1
                 // so this is decrement #1 and the next is at the end of method
-                metrics.decrement("fragmentation");
+                metrics.decrement("vmtable.fragmentation");
             }
 
             tail.unlock();
@@ -287,7 +287,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             return false;
         }
 
-        metrics.decrement("fragmentation");
+        metrics.decrement("vmtable.fragmentation");
         return true;
     }
 
@@ -344,7 +344,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         int incSize = size - totalSize;
         addFreeBlock(new TableBlock(totalSize, incSize));
         freeMemorySize.addAndGet(incSize);
-        metrics.increment("increases");
+        metrics.increment("vmtable.increases");
     }
 
     /**
