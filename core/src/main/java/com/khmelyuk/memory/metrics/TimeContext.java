@@ -16,7 +16,7 @@ public class TimeContext {
     }
 
     public boolean start() {
-        if (startTime >= 0) {
+        if (startTime != -1) {
             return false;
         }
         startTime = System.nanoTime();
@@ -24,7 +24,7 @@ public class TimeContext {
     }
 
     public boolean stop() {
-        if (startTime < 0) {
+        if (startTime == -1) {
             return false;
         }
         long time = System.nanoTime() - startTime;

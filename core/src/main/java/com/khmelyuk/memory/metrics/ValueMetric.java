@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ValueMetric implements Metric<Long> {
 
-    private AtomicLong value;
+    private final AtomicLong value;
 
     public ValueMetric() {
         this(0L);
@@ -33,6 +33,10 @@ public class ValueMetric implements Metric<Long> {
 
     public void decrement() {
         this.value.decrementAndGet();
+    }
+
+    public void decrement(long value) {
+        this.value.addAndGet(-value);
     }
 
     @Override

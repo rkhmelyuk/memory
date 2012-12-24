@@ -22,6 +22,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
+    private static final int YIELD_MARGIN = 35;
+    private static final int MAX_ALLOC_LOOPS = 50;
+
     private final ReadWriteLock usedLock = new ReentrantReadWriteLock();
     private final ReadWriteLock freeLock = new ReentrantReadWriteLock();
 
@@ -58,12 +61,22 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
     @Override
     public Collection<Block> getUsed() {
-        return Collections.<Block>unmodifiableCollection(used);
+        try {
+            usedLock.readLock().lock();
+            return Collections.<Block>unmodifiableCollection(used);
+        } finally {
+            usedLock.readLock().unlock();
+        }
     }
 
     @Override
     public Collection<Block> getFree() {
-        return Collections.<Block>unmodifiableCollection(free);
+        try {
+            freeLock.readLock().lock();
+            return Collections.<Block>unmodifiableCollection(free);
+        } finally {
+            freeLock.readLock().unlock();
+        }
     }
 
     @Override
@@ -126,6 +139,8 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
     protected TableBlock findBlockToAllocateFrom(int size) {
 
+        // TODO - do we need this loop restriction?
+        int loop = 0;
         boolean repeat;
         do {
             repeat = false;
@@ -149,6 +164,16 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
                 freeLock.readLock().unlock();
             }
             metrics.increment("vmtable.loopsToFindFitBlock");
+
+            // avoid ever looping, instead prefer to wait or exit the loop
+            loop++;
+            if (loop > MAX_ALLOC_LOOPS) {
+                break;
+            } else if (loop == MAX_ALLOC_LOOPS) {
+                sleep();
+            } else if (loop >= YIELD_MARGIN) {
+                Thread.yield();
+            }
         }
         while (repeat);
 
@@ -225,7 +250,9 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         TableBlock head = null;
         TableBlock tail = null;
         boolean repeat;
+        int loop = 0;
         do {
+            // TODO - metrics for these loops
             repeat = false;
             try {
                 freeLock.readLock().lock();
@@ -259,8 +286,15 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             } finally {
                 freeLock.readLock().unlock();
             }
-        }
-        while (repeat);
+            loop++;
+            if (loop > MAX_ALLOC_LOOPS) {
+                break;
+            } else if (loop == MAX_ALLOC_LOOPS) {
+                sleep();
+            } else if (loop >= YIELD_MARGIN) {
+                Thread.yield();
+            }
+        } while (repeat);
 
 
         // if there is a head or tail - then resize and return true
@@ -277,7 +311,8 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
                 // we want to decrease fragmentation twice for this case, because we merged 3 blocks into 1
                 // so this is decrement #1 and the next is at the end of method
-                metrics.decrement("vmtable.fragmentation");
+                // TODO - investigate why double decrement is needed?!
+                metrics.decrement("vmtable.fragmentation", 2);
             }
 
             tail.unlock();
@@ -309,6 +344,7 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         // for any functionality but to show information
         metrics.reset();
 
+        // --- used
         try {
             usedLock.writeLock().lock();
             used.clear();
@@ -316,7 +352,10 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         } finally {
             usedLock.writeLock().unlock();
         }
+        metrics.mark("vmtable.usedSize", usedMemorySize.longValue());
+        metrics.mark("vmtable.usedBlocksCount", used.size());
 
+        // --- free
         try {
             freeLock.writeLock().lock();
             free.clear();
@@ -325,6 +364,8 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
         } finally {
             freeLock.writeLock().unlock();
         }
+        metrics.mark("vmtable.freeSize", freeMemorySize.longValue());
+        metrics.mark("vmtable.freeBlocksCount", free.size());
     }
 
     @Override
@@ -399,6 +440,14 @@ public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
             return table.remove(block);
         } finally {
             lock.writeLock().unlock();
+        }
+    }
+
+    private void sleep() {
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            // TODO: how to handle in this case?
         }
     }
 }

@@ -9,8 +9,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class TimerMetric implements Metric<Long> {
 
-    private AtomicLong time;
-    private AtomicLong count;
+    private final AtomicLong time;
+    private final AtomicLong count;
 
     public TimerMetric() {
         time = new AtomicLong(0);
@@ -36,8 +36,9 @@ public class TimerMetric implements Metric<Long> {
 
         // TODO: make it concurrent safe
         long newAvgTime = (time * count + newTime) / (count + 1);
-        this.time.set(newAvgTime);
-        this.count.incrementAndGet();
+        if (this.time.compareAndSet(time, newAvgTime)) {
+            this.count.incrementAndGet();
+        }
     }
 
     @Override

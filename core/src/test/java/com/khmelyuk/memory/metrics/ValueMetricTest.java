@@ -63,6 +63,10 @@ public class ValueMetricTest {
         metric.update(10);
         metric.decrement();
         assertThat(metric.get(), is(9L));
+
+        metric.update(10);
+        metric.decrement(3);
+        assertThat(metric.get(), is(7L));
     }
 
     @Test

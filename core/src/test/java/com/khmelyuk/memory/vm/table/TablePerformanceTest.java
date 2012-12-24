@@ -14,14 +14,16 @@ public class TablePerformanceTest {
     static final int SIZE = MemorySize.megabytes(2).getBytes();
     static final int COUNT_COEFF = 2000;
 
-    @Test(timeout = 500)
+    @Test(timeout = 900)
     public void testLinkedTablePerformance() {
+        long begin = System.currentTimeMillis();
         testPerformance(new LinkedVirtualMemoryTable(SIZE), 0);
         long total = 0;
         for (int i = 0; i < N; i++) {
             total += testPerformance(new LinkedVirtualMemoryTable(SIZE), i);
         }
 
+        System.out.println("Linked: duration " + (System.currentTimeMillis() - begin) + "ms");
         System.out.println("Linked: Avg. duration " + (total / N) + "ms");
     }
 

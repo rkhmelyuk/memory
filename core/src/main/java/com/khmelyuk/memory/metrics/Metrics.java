@@ -77,7 +77,7 @@ public final class Metrics {
      * @return the timer metric.
      */
     public TimerMetric getTimerMetric(String name) {
-        return asTimeMetric(getMetric(name));
+        return (TimerMetric) getMetric(name);
     }
 
     /**
@@ -87,7 +87,7 @@ public final class Metrics {
      * @return the value metric.
      */
     public ValueMetric getValueMetric(String name) {
-        return asValueMetric(getMetric(name));
+        return (ValueMetric) getMetric(name);
     }
 
 
@@ -99,7 +99,7 @@ public final class Metrics {
      * @return the metric value.
      */
     public long get(String metric) {
-        return asValueMetric(getMetric(metric)).get();
+        return getValueMetric(metric).get();
     }
 
     /**
@@ -108,7 +108,7 @@ public final class Metrics {
      * @param metric the metric name.
      */
     public void increment(String metric) {
-        asValueMetric(getMetric(metric)).increment();
+        getValueMetric(metric).increment();
     }
 
     /**
@@ -117,7 +117,16 @@ public final class Metrics {
      * @param metric the metric name.
      */
     public void decrement(String metric) {
-        asValueMetric(getMetric(metric)).decrement();
+        getValueMetric(metric).decrement();
+    }
+
+    /**
+     * Decrements the metric value.
+     *
+     * @param metric the metric name.
+     */
+    public void decrement(String metric, long value) {
+        getValueMetric(metric).decrement(value);
     }
 
     /**
@@ -127,7 +136,7 @@ public final class Metrics {
      * @param value  the metric value.
      */
     public void mark(String metric, long value) {
-        asValueMetric(getMetric(metric)).update(value);
+        getValueMetric(metric).update(value);
     }
 
     /**
@@ -137,7 +146,7 @@ public final class Metrics {
      * @return the created time context.
      */
     public TimeContext getTimer(String name) {
-        return new TimeContext(asTimeMetric(getMetric(name)));
+        return new TimeContext(getTimerMetric(name));
     }
 
     /**
@@ -169,13 +178,5 @@ public final class Metrics {
             throw new MetricNotFoundException(name);
         }
         return metric;
-    }
-
-    private TimerMetric asTimeMetric(Metric metric) {
-        return (TimerMetric) metric;
-    }
-
-    private ValueMetric asValueMetric(Metric metric) {
-        return (ValueMetric) metric;
     }
 }

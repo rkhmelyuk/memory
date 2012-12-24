@@ -87,8 +87,15 @@ public class MetricsTest {
         Metrics metrics = new Metrics();
         metrics.addValueMetric("metricName");
         metrics.decrement("metricName");
-
         assertThat(metrics.get("metricName"), is(-1L));
+    }
+
+    @Test
+    public void customDecrement() {
+        Metrics metrics = new Metrics();
+        metrics.addValueMetric("metricName", 10);
+        metrics.decrement("metricName", 5);
+        assertThat(metrics.get("metricName"), is(5L));
     }
 
     @Test(expected = MetricNotFoundException.class)

@@ -25,12 +25,12 @@ public class Memory implements Monitorable {
         this.vm = vm;
 
         metrics = new Metrics();
-        metrics.addValueMetric("spaces");
+        metrics.addValueMetric("memory.spaces");
 
         freeSpaceListener = new FreeSpaceListener() {
             public void onFreeSpace(Space space) {
                 Memory.this.vm.free(space.getBlock());
-                metrics.decrement("spaces");
+                metrics.decrement("memory.spaces");
             }
         };
     }
@@ -44,7 +44,7 @@ public class Memory implements Monitorable {
      */
     public MemorySpace allocate(int length) throws OutOfMemoryException {
         final VirtualMemoryBlock block = vm.allocate(length);
-        metrics.increment("spaces");
+        metrics.increment("memory.spaces");
         return new MemorySpace(this, block, freeSpaceListener);
     }
 

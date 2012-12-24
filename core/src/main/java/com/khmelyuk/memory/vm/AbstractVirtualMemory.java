@@ -32,6 +32,10 @@ public abstract class AbstractVirtualMemory<S extends Storage> implements Virtua
         this.size = storage.size();
 
         this.metrics = new Metrics();
+        metrics.addValueMetric("vm.io.reads");
+        metrics.addValueMetric("vm.io.writes");
+        metrics.addTimerMetric("vm.io.readTime");
+        metrics.addTimerMetric("vm.io.writeTime");
         metrics.addTimerMetric("vm.allocationTime");
         metrics.addTimerMetric("vm.freeTime");
     }
@@ -106,30 +110,64 @@ public abstract class AbstractVirtualMemory<S extends Storage> implements Virtua
     }
 
     public void write(byte[] data) throws OutOfBoundException {
+        TimeContext timer = metrics.getTimer("vm.io.writeTime");
+        timer.start();
         this.storage.write(data);
+        timer.stop();
+        metrics.increment("vm.io.writes");
     }
 
     public void write(byte[] data, int offset) throws OutOfBoundException {
+        TimeContext timer = metrics.getTimer("vm.io.writeTime");
+        timer.start();
         this.storage.write(data, offset);
+        timer.stop();
+        metrics.increment("vm.io.writes");
     }
 
     public void write(byte[] data, int offset, int length) throws OutOfBoundException {
+        TimeContext timer = metrics.getTimer("vm.io.writeTime");
+        timer.start();
         this.storage.write(data, offset, length);
-    }
-
-    public int read(byte[] data) throws OutOfBoundException {
-        return this.storage.read(data);
-    }
-
-    public int read(byte[] data, int offset, int length) {
-        return this.storage.read(data, offset, length);
+        timer.stop();
+        metrics.increment("vm.io.writes");
     }
 
     public void write(byte data, int offset) throws OutOfBoundException {
+        TimeContext timer = metrics.getTimer("vm.io.writeTime");
+        timer.start();
         this.storage.write(data, offset);
+        timer.stop();
+        metrics.increment("vm.io.writes");
+    }
+
+    public int read(byte[] data) throws OutOfBoundException {
+        TimeContext timer = metrics.getTimer("vm.io.readTime");
+        timer.start();
+        int result = this.storage.read(data);
+        timer.stop();
+        metrics.increment("vm.io.reads");
+
+        return result;
+    }
+
+    public int read(byte[] data, int offset, int length) {
+        TimeContext timer = metrics.getTimer("vm.io.readTime");
+        timer.start();
+        int result = this.storage.read(data, offset, length);
+        timer.stop();
+        metrics.increment("vm.io.reads");
+
+        return result;
     }
 
     public byte read(int offset) {
-        return this.storage.read(offset);
+        TimeContext timer = metrics.getTimer("vm.io.readTime");
+        timer.start();
+        byte result = this.storage.read(offset);
+        timer.stop();
+        metrics.increment("vm.io.reads");
+
+        return result;
     }
 }

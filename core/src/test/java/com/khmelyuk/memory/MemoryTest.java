@@ -225,16 +225,16 @@ public class MemoryTest {
     public void spacesMetric() {
         Space space = memory.allocate(MemorySize.kilobytes(20));
 
-        assertThat(memory.getMetrics().getValueMetric("spaces").get(), is(1L));
+        assertThat(memory.getMetrics().getValueMetric("memory.spaces").get(), is(1L));
 
         space.free();
 
-        assertThat(memory.getMetrics().getValueMetric("spaces").get(), is(0L));
+        assertThat(memory.getMetrics().getValueMetric("memory.spaces").get(), is(0L));
     }
 
     @Test
     public void hasMetrics() {
         MetricsSnapshot snapshot = memory.getMetrics();
-        assertThat(snapshot.getMetrics(), hasItem("spaces"));
+        assertThat(snapshot.getMetrics(), hasItem("memory.spaces"));
     }
 }

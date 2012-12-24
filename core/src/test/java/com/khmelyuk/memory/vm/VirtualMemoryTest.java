@@ -123,6 +123,8 @@ public abstract class VirtualMemoryTest {
         Assert.assertEquals(2L, metrics.getValueMetric("vmtable.usedBlocksCount").get());
         Assert.assertThat(metrics.getTimerMetric("vm.allocationTime").getCount(), is(2L));
         Assert.assertThat(metrics.getTimerMetric("vm.freeTime").getCount(), is(0L));
+        Assert.assertThat(metrics.getTimerMetric("vm.io.readTime").getCount(), is(0L));
+        Assert.assertThat(metrics.getTimerMetric("vm.io.writeTime").getCount(), is(0L));
     }
 
 }
