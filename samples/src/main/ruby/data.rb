@@ -253,27 +253,22 @@ def aggregate(dir, source, target, group_fn, aggregate_fn)
   puts "Aggregating data for #{source} (group=#{group_fn}, aggregate=#{aggregate_fn})"
   out = File.new(dir + data_filename(target), "w")
   index = 0
-  new_group = true
   out_row = nil
   CSV::Reader.parse(File.open(dir + data_filename(source), 'rb')) do |row|
     if index == 0 then
       out.puts CSV.generate_line(row)
     else
-      if new_group then
-        out_row = nil
-      end
       out_row = aggregate_fn.call(row, out_row)
       if group_fn.call(row) then
         out.puts CSV.generate_line(out_row)
-        new_group = true
-      else
-        new_group = false
+        out_row = Array.new(row.size)
+        out_row[0] = row[0]
       end
     end
     index = index + 1
   end
 
-  unless new_group
+  unless out_row == nil
     out.puts CSV.generate_line(out_row)
   end
 
@@ -288,12 +283,14 @@ def group_by_time(col, time)
   lambda { |row|
     curr = row[col].to_f
     if new_group
-      init_time = curr
+      if init_time == nil
+        init_time = curr
+      end
       new_group = false
     else
       if curr - init_time >= time
         new_group = true
-        init_time = nil
+        init_time = curr
       end
     end
 

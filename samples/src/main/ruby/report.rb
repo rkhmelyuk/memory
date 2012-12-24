@@ -66,7 +66,7 @@ sample = opts.sample
 
 $input_dir= "#{root}/#{sample}/"
 
-date = DateTime.now.strftime("%Y%m%d%%H%M%S")
+date = DateTime.now.strftime("%Y%m%d%H%M%S")
 $report_dir="#{output}/#{sample}/#{date}/"
 $data_dir="#{$report_dir}data/"
 $charts_dir="#{$report_dir}charts/"
