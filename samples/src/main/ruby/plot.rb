@@ -9,13 +9,16 @@ class Graph
   end
 end
 
-def plot(title, xlabel, ylabel, metrics, data_dir, charts_dir)
+def plot(report, data_dir, charts_dir)
+  metrics = report.metrics
+
   if metrics.length == 0 then
     raise "No metrics specified"
   end
 
   cols = []
   if metrics.length > 1 then
+    #if there are multiple sources, merge them into single data file and build chart using it
     metric_name = metrics.keys.join("_")
     if merge_data(data_dir, metrics, metric_name)
       index = 1
@@ -44,9 +47,10 @@ def plot(title, xlabel, ylabel, metrics, data_dir, charts_dir)
 
   data_file = data_dir + data_filename(metric_name)
   if File.exists?(data_file)
-    chart_file = charts_dir + title.downcase.gsub(/[^a-z0-9_\-]/, "_").gsub(/__+/, "_") + ".png"
-    `./plot.sh '#{title}' '#{xlabel}' '#{ylabel}' '#{chart_file}' '#{data_file}' '#{cols.join(" ")}'`
+    #if data file used to build chart exists, then build a chart
+    chart_file = charts_dir + report.title.downcase.gsub(/[^a-z0-9_\-]/, "_").gsub(/__+/, "_") + ".png"
+    `./plot.sh '#{report.title}' '#{report.xlabel}' '#{report.ylabel}' '#{chart_file}' '#{data_file}' '#{cols.join(" ")}'`
 
-    Graph.new(title, metric_name, data_file, chart_file)
+    Graph.new(report.title, metric_name, data_file, chart_file)
   end
 end

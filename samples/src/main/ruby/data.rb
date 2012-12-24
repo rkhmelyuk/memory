@@ -112,7 +112,7 @@ end
 
 # change the value for column to be the diff from prev value in that column
 def since_last_time(dir, source, target, column)
-  if !File.exists?(dir + data_filename(source))
+  unless File.exists?(dir + data_filename(source))
     puts "data file #{dir + data_filename(source)} is not found"
     return nil
   end
@@ -133,78 +133,109 @@ def since_last_time(dir, source, target, column)
   out.close()
 end
 
-def output_columns(source_row, columns, target_row, header)
-  columns.each do |column|
+def output_columns(source_row, original_columns, column_offset, target_row, header)
+  original_columns.each do |column|
     if header then
       # output correct column name
-      if source_row[column.index] != nil
-        target_row << source_row[column.index] + " " + column.name
-      else
-        target_row << column.name
-      end
+      target_row[column_offset] = column.name
     else
-      target_row << source_row[column.index]
+      target_row[column_offset] = source_row[column.index]
     end
+    column_offset = column_offset + 1
   end
 end
 
+# builds the offset map
+def build_offset(source)
+  shift = {}
+  index = 1
+  source.each do |key, cols|
+    shift[key] = index
+    index = index + cols.size
+  end
+
+  shift
+end
+
+# get the number of columns in the specified sources
+def get_cols_count(source)
+  count = 1
+  source.each do |key, cols|
+    count = count + cols.size
+  end
+  count
+end
 
 def merge_data(dir, source, target, merge_fn=nil)
   puts "Combining data for #{source} into #{target}"
   # prepare the list of readers
-  index = 0
   readers = {}
-  main_reader_key = nil
   source.each_key do |key|
-    if index == 0 then
-      main_reader_key = key
-    end
     if !File.exists?(dir + data_filename(key.to_s))
       return false
     end
     readers[key] = CSV::Reader.parse(File.open(dir + data_filename(key.to_s), 'rb'))
-    index = index + 1
   end
 
-  # merge into target file
-  reader = readers[main_reader_key]
-  columns = source[main_reader_key]
-  index = 0
   # loop for all rows in first reader
-  out = File.new(dir + data_filename(target), "w")
-  reader.each do |row|
-    merged_row = []
-    merged_row << row[0]
+  cols_count = get_cols_count(source)
 
-    output_columns(row, columns, merged_row, index == 0)
+  # calculate offsets of columns of different sources
+  offsets = build_offset(source)
+  merged_rows = {}
+  col_index = 1
 
-    # for each row in other csv readers
-    source.each do |key, columns|
-      if key != main_reader_key then
-        reader = readers[key]
-        reader_row = reader.shift()
-
-        # output only matched rows
-        #if reader_row[0] == row[0] then
-        output_columns(reader_row, columns, merged_row, index == 0)
-        #else
-
-        #end
+  title_row = Array.new(cols_count)
+  readers.each do |key, reader|
+    index = 0
+    reader.each do |row|
+      ts = row[0]
+      merged_row = merged_rows[ts]
+      if merged_row == nil
+        if index == 0
+          # if title, use predefined title_row
+          merged_row = title_row
+        else
+          merged_row = Array.new(cols_count)
+          merged_rows[ts] = merged_row
+        end
+        merged_row[0] = ts
       end
-    end
 
-    if merge_fn != nil
-      merge_fn.call(merged_row, index)
-    end
+      offset = offsets[key]
 
-    # output to target file
-    out.puts CSV.generate_line(merged_row)
-    index = index + 1
+      # output columns using specified offset
+      output_columns(row, source[key], offset, merged_row, index == 0)
+
+      if merge_fn != nil
+        merge_fn.call(merged_row, index)
+      end
+
+      index = index + 1
+    end
+    col_index = col_index + 1
   end
 
   # close csv readers
   readers.each_value do |value|
     value.close
+  end
+
+  # sort merged_rows
+  merged_rows = merged_rows.values
+  merged_rows = merged_rows.sort do |r1, r2|
+    v1 = r1[0].to_f
+    v2 = r2[0].to_f
+    v1 <=> v2
+  end
+  # add header row
+  merged_rows.insert(0, title_row)
+
+
+  out = File.new(dir + data_filename(target), "w")
+  merged_rows.each do |row|
+    # output to target file
+    out.puts CSV.generate_line(row)
   end
 
   # close target file
@@ -214,7 +245,7 @@ def merge_data(dir, source, target, merge_fn=nil)
 end
 
 def aggregate(dir, source, target, group_fn, aggregate_fn)
-  if !File.exists?(dir + data_filename(source))
+  unless File.exists?(dir + data_filename(source))
     puts "data file #{dir + data_filename(source)} is not found"
     return nil
   end

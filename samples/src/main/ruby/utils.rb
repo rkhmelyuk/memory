@@ -7,3 +7,11 @@ def create_dirs(dirs)
     end
   end
 end
+
+def put_row(row)
+  puts row.join(",")
+end
+
+def put_rows(rows)
+  rows.each { |row| put_row(row) }
+end

@@ -22,8 +22,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class LinkedVirtualMemoryTable implements VirtualMemoryTable {
 
-    private static final int YIELD_MARGIN = 35;
-    private static final int MAX_ALLOC_LOOPS = 50;
+    private static final int YIELD_MARGIN = 15;
+    private static final int MAX_ALLOC_LOOPS = 20;
 
     private final ReadWriteLock usedLock = new ReentrantReadWriteLock();
     private final ReadWriteLock freeLock = new ReentrantReadWriteLock();

@@ -68,7 +68,7 @@ gnuplot << EOF
     set style line 8 lt rgb "#FBDF61" lw 1.5 pt 8 ps 0.5
     set style line 9 lt rgb "#F25900" lw 1.5 pt 12 ps 0.6
     set style line 10 lt rgb "#014F4B" lw 1.5 pt 10 ps 0.5
-    set style line 42 lt rgb "#dddddd" lw 1.2 pt 10 ps 0.5
+    set style line 42 lt rgb "#dddddd" lw 1.1 pt 10 ps 0.5
 
     #set xdata time
     #set timefmt "%s"
