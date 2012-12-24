@@ -1,11 +1,17 @@
 package com.khmelyuk.memory.samples.metrics;
 
+import com.khmelyuk.memory.metrics.MetricsSnapshot;
+import com.khmelyuk.memory.metrics.Monitorable;
+import com.khmelyuk.memory.metrics.TimerMetric;
+import com.khmelyuk.memory.metrics.ValueMetric;
 import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.*;
-import com.yammer.metrics.reporting.ConsoleReporter;
+import com.yammer.metrics.core.Gauge;
+import com.yammer.metrics.core.Timer;
 import com.yammer.metrics.reporting.CsvReporter;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -17,104 +23,85 @@ import java.util.concurrent.TimeUnit;
  */
 public class MemoryMetrics {
 
-    private static Map<String, Gauge> gauges = new HashMap<String, Gauge>();
-    private static Map<String, Counter> counters = new HashMap<String, Counter>();
-    private static Map<String, Histogram> histograms = new HashMap<String, Histogram>();
-    private static Map<String, Meter> meters = new HashMap<String, Meter>();
-    private static Map<String, Timer> timers = new HashMap<String, Timer>();
-    private static Map<String, TimerContext> timerContexts = new HashMap<String, TimerContext>();
-
-    static {
-        ConsoleReporter.enable(500, TimeUnit.MILLISECONDS);
-        CsvReporter.enable(new File("/Users/ruslan/projects/memory/core/measurements/"), 500, TimeUnit.MILLISECONDS);
-    }
-
-    public static void reset() {
-        for (Counter counter : counters.values()) {
-            counter.clear();
+    public static void init(String sampleName, long reportTimeMillis) {
+        File dir = new File("./samples/measurements/" + sampleName + "/");
+        if (dir.exists()) {
+            removeDirectory(dir);
         }
-        for (Meter meter : meters.values()) {
-            meter.stop();
+        dir.mkdirs();
+        CsvReporter.enable(dir, reportTimeMillis, TimeUnit.MILLISECONDS);
+        //ConsoleReporter.enable(10, TimeUnit.MILLISECONDS);
+    }
+
+    public static void monitor(Monitorable monitorable) {
+        // --- init monitoring
+        final Map<TimerMetric, Timer> timers = new HashMap<>();
+
+        MetricsSnapshot snapshot = monitorable.getMetrics();
+        final Collection<String> metrics = snapshot.getMetrics();
+        for (String metricName : metrics) {
+            final ValueMetric valueMetric = snapshot.getValueMetric(metricName);
+            if (valueMetric != null) {
+                Metrics.newGauge(MemoryMetrics.class, metricName, new Gauge<Long>() {
+                    //                    long prevValue = 0;
+                    @Override
+                    public Long value() {
+                        return valueMetric.get();
+                    }
+                });
+                continue;
+            }
+
+            final TimerMetric timerMetric = snapshot.getTimerMetric(metricName);
+            if (timerMetric != null) {
+                final Timer timer = Metrics.newTimer(MemoryMetrics.class, metricName);
+                timers.put(timerMetric, timer);
+                continue;
+            }
+
+            System.err.println("Unknown metric " + metricName);
         }
-        for (Timer timer : timers.values()) {
-            timer.stop();
+
+        Metrics.newGauge(ConcurrencyTestCase.class, "timestamp", new Gauge<Long>() {
+            @Override
+            public Long value() {
+                for (Map.Entry<TimerMetric, Timer> entry : timers.entrySet()) {
+                    TimerMetric timerMetric = entry.getKey();
+                    Timer timer = entry.getValue();
+
+                    long count = timer.count();
+                    long newCount = timerMetric.getCount();
+                    long newTime = timerMetric.getTime();
+                    for (long i = count; i < newCount; i++) {
+                        timer.update(newTime, TimeUnit.NANOSECONDS);
+                    }
+                }
+                return System.currentTimeMillis();
+            }
+        });
+    }
+
+
+    public static void monitorSystemResources() {
+        Metrics.newGauge(MemoryMetrics.class, "cpu", new Gauge<Long>() {
+            @Override
+            public Long value() {
+                return (long) (100 * ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage());
+            }
+        });
+        Metrics.newGauge(MemoryMetrics.class, "memory", new Gauge<Long>() {
+            @Override
+            public Long value() {
+                return Runtime.getRuntime().freeMemory() / 1024;
+            }
+        });
+    }
+
+    private static void removeDirectory(File dir) {
+        File[] files = dir.listFiles();
+        for (File each : files) {
+            each.delete();
         }
-
-        counters.clear();
-        meters.clear();
-        timers.clear();
-        timerContexts.clear();
-        histograms.clear();
-        gauges.clear();
+        dir.delete();
     }
-
-    public static void addMetric(String name, Gauge gauge) {
-        if (gauges.get(name) == null) {
-            gauge = Metrics.newGauge(MemoryMetrics.class, name, gauge);
-            gauges.put(name, gauge);
-
-        }
-    }
-
-    public static void meter(String metric, long value) {
-        getMeter(metric).mark(value);
-    }
-
-    public static void update(String metric, long value) {
-        getHistogram(metric).update(value);
-    }
-
-    public static void startTimer(String metric) {
-        TimerContext context = getTimer(metric).time();
-        timerContexts.put(metric, context);
-    }
-
-    public static void stopTimer(String metric) {
-        timerContexts.get(metric).stop();
-    }
-
-    public static void increment(String metric) {
-        getCounter(metric).inc();
-    }
-
-    public static void decrement(String metric) {
-        getCounter(metric).dec();
-    }
-
-    private static Counter getCounter(String metric) {
-        Counter counter = counters.get(metric);
-        if (counter == null) {
-            counter = Metrics.newCounter(new MetricName(MemoryMetrics.class, metric));
-            counters.put(metric, counter);
-        }
-        return counter;
-    }
-
-    private static Meter getMeter(String metric) {
-        Meter meter = meters.get(metric);
-        if (meter == null) {
-            meter = Metrics.newMeter(MemoryMetrics.class, metric, "test", TimeUnit.SECONDS);
-            meters.put(metric, meter);
-        }
-        return meter;
-    }
-
-    private static Timer getTimer(String metric) {
-        Timer timer = timers.get(metric);
-        if (timer == null) {
-            timer = Metrics.newTimer(MemoryMetrics.class, metric, TimeUnit.MILLISECONDS, TimeUnit.MILLISECONDS);
-            timers.put(metric, timer);
-        }
-        return timer;
-    }
-
-    private static Histogram getHistogram(String metric) {
-        Histogram histogram = histograms.get(metric);
-        if (histogram == null) {
-            histogram = Metrics.newHistogram(MemoryMetrics.class, metric);
-            histograms.put(metric, histogram);
-        }
-        return histogram;
-    }
-
 }
