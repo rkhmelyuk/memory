@@ -15,7 +15,7 @@ if !opts.reports || !opts.path then
   raise "Please specify all parameters: --reports and --path"
 end
 
-date = DateTime.now.strftime("%Y%m%d_%H%M%S")
+date = DateTime.now.strftime("%Y%m%d%H%M%S")
 $report_dir="#{opts.path}/#{date}/"
 $charts_dir="#{$report_dir}charts/"
 $data_dir="#{$report_dir}data/"
