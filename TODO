@@ -1,0 +1,25 @@
+
+current
+------------------------------------------------
+ * TOC
+ * show additional information on charts - like max, min, avg (?) - maybe show another page with table and min/max information?
+
+ * mechanism to monitor:
+     * base metrics on MemoryStatistic class! this could be used not only for testing needs, but also in prod,
+        when it could be exposed via JMX and watched through jconsole, or exposed to other systems
+
+     * performance
+     * concurrency impact
+
+backlog
+-----------------------------------------------
+ * use charts to tune and optimize memory
+ * what should we do when try to work with freed memory/block?
+ * remove Object related API
+ * simple cache example
+ * basic DVM API with basic implementation (ie define DVM, attach local memory, write/read)
+ * rewrite asserts
+
+
+TODO:
+ * should there be a single Metrics class per Memory instance?

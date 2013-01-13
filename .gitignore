@@ -3,6 +3,7 @@
 *.ipr
 *.iws
 *.test
+.DS_Store
 
 .idea/
 target/
